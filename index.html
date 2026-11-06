@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>SBD Counter</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Caveat:wght@700&display=swap">
+<style>
+/* Four colours only: lilac, cream, black, white (plus muted neutrals). */
+:root {
+  --lilac: #DCC4E0; --lilac-soft: #F1E6F3; --cream: #FBF6EC;
+  --ink: #1A1A1A; --white: #FFFFFF; --muted: #5C5348; --line: #E2D9CB;
+  --display: 'Caveat', 'Comic Sans MS', cursive;
+  --ui: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; background: var(--cream); color: var(--ink); font-family: var(--ui); overscroll-behavior: none; }
+[hidden] { display: none !important; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+.app { position: fixed; top: 0; left: 0; right: 0; height: var(--tg-viewport-stable-height, 100%); overflow: hidden; }
+.screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--cream); }
+
+.band { background: var(--lilac); height: 56px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex: none; }
+.band-row { flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.title { font-family: var(--display); font-weight: 700; font-size: 38px; line-height: 1; margin: 0; -webkit-text-stroke: 1.2px currentColor; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meta { font-size: 14px; font-weight: 600; white-space: nowrap; }
+.tag { font-size: 13px; font-weight: 800; letter-spacing: 0.04em; white-space: nowrap; }
+main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+main > * { flex-shrink: 0; }
+.subbar { flex: none; padding: 12px 14px 2px; }
+.pills { display: flex; gap: 6px; }
+.pills button { flex: 1; height: 44px; border: 1.5px solid var(--ink); border-radius: 999px; background: transparent; font-size: 14px; font-weight: 500; }
+.pills button[aria-pressed="true"] { background: var(--ink); color: var(--white); font-weight: 700; }
+.primary { height: 56px; border: 0; border-radius: 999px; background: var(--ink); color: var(--white); font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center; width: 100%; }
+.primary:disabled { opacity: 0.4; }
+
+/* Welcome and name screens */
+#welcome, #name { background: var(--lilac); }
+.hero { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; min-height: 0; }
+.hero h2 { font-family: var(--display); font-weight: 700; font-size: 68px; line-height: 1.2; letter-spacing: 0.02em; margin: 0; padding: 10px 28px; -webkit-text-stroke: 2px currentColor; }
+#hi { font-size: 64px; }
+#hi .w { display: inline-block; white-space: nowrap; }
+#hi .ch { display: inline-block; }
+#hi .ch.in { animation: chIn 0.18s ease-out both; }
+#hi .ph { opacity: 0.45; }
+@keyframes chIn { from { opacity: 0; transform: translateY(10px) scale(0.85); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { #hi .ch.in { animation: none; } }
+.act { flex: none; padding: 0 22px calc(28px + env(safe-area-inset-bottom, 0px)); }
+.namecard { background: var(--white); border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.namecard label { font-size: 14px; font-weight: 700; }
+.namecard input { height: 56px; border: 1.5px solid var(--ink); border-radius: 14px; padding: 0 16px; font-size: 18px; background: var(--white); width: 100%; }
+.err { margin: 0; font-size: 14px; font-weight: 700; }
+.note { margin: 0; font-size: 13px; color: var(--muted); }
+
+.center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; padding: 32px; }
+.center h2 { font-family: var(--display); font-weight: 700; font-size: 46px; line-height: 1; margin: 0; -webkit-text-stroke: 1.2px currentColor; }
+.center p { margin: 0; font-size: 15px; color: var(--muted); line-height: 1.4; max-width: 280px; }
+.center .primary { width: auto; padding: 0 28px; height: 48px; font-size: 15px; margin-top: 6px; }
+.lock { width: 72px; height: 72px; border-radius: 50%; background: var(--lilac); display: flex; align-items: center; justify-content: center; }
+.spin { width: 40px; height: 40px; border-radius: 50%; border: 4px solid var(--lilac); border-top-color: var(--ink); }
+@media (prefers-reduced-motion: no-preference) { .spin { animation: spin 0.8s linear infinite; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Count */
+.tile { position: relative; flex: 1; min-height: 120px; display: grid; grid-template-columns: 76px minmax(0, 1fr) 76px; grid-template-rows: auto 1fr; align-items: center; justify-items: center; padding: 14px 14px 12px; background: var(--white); border-radius: 24px; }
+.tile .add { position: absolute; inset: 0; border: 0; background: transparent; border-radius: 24px; touch-action: manipulation; transition: background 0.1s ease; }
+.tile .add:active { background: var(--lilac-soft); }
+.tile .label { grid-column: 1 / -1; grid-row: 1; font-size: 16px; font-weight: 800; pointer-events: none; }
+.num { grid-column: 2; grid-row: 2; font-size: 72px; font-weight: 800; line-height: 0.9; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; display: inline-block; pointer-events: none; }
+.num.pop { animation: pop 0.22s ease; }
+@keyframes pop { 40% { transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .num.pop { animation: none; } }
+.plus { grid-column: 3; grid-row: 2; width: 56px; height: 56px; border-radius: 50%; background: var(--ink); display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.undo { grid-column: 1; grid-row: 2; position: relative; z-index: 2; width: 56px; height: 56px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--white); display: flex; align-items: center; justify-content: center; }
+.undo:active { background: var(--lilac-soft); }
+.undo:disabled { opacity: 0.25; cursor: default; }
+
+/* Deals */
+.sec { font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: var(--muted); margin-top: 4px; }
+.rule { margin: 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
+.rule b { color: var(--ink); }
+.stackrow { display: flex; align-items: stretch; gap: 6px; }
+.stackrow div { flex: 1; min-width: 0; background: var(--white); border-radius: 14px; padding: 10px 6px; text-align: center; }
+.stackrow b { display: block; font-size: 14px; font-weight: 800; }
+.stackrow span { display: block; font-size: 12px; color: var(--muted); line-height: 1.25; }
+.stackrow i { align-self: center; font-style: normal; font-weight: 800; font-size: 20px; }
+.vgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.voucher { background: var(--white); border-radius: 16px; padding: 12px 14px; }
+.voucher.out { border: 2px solid var(--ink); }
+.voucher .off { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+.voucher .min { font-size: 13px; font-weight: 500; color: var(--muted); }
+.voucher .how { font-size: 12px; font-weight: 600; margin-top: 4px; }
+.slots { display: flex; flex-wrap: wrap; gap: 6px; }
+.slots span { background: var(--lilac-soft); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; }
+.bgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.bundle { background: var(--white); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.bundle:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.bundle img { width: 100%; aspect-ratio: 1.55 / 1; object-fit: contain; display: block; padding: 8px 8px 0; }
+.bundle:last-child:nth-child(odd) img { aspect-ratio: 2.4 / 1; }
+.bundle .info { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 4px; }
+.bundle .pname { font-size: 14px; font-weight: 800; line-height: 1.25; }
+.bundle .price { font-size: 13px; font-weight: 600; color: var(--muted); }
+.upgrade { background: var(--white); border-radius: 20px; display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 12px; padding: 10px 16px 10px 10px; }
+.upgrade.hero { border: 2px solid var(--ink); }
+.upgrade img { width: 112px; height: 84px; object-fit: contain; }
+.upgrade .to { font-size: 14px; font-weight: 600; line-height: 1.3; }
+.upgrade .off { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+.steps2 { background: var(--white); border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.step { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; line-height: 1.35; }
+.dot { width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: var(--white); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex: none; }
+.phase { background: var(--white); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.ph-h b { font-size: 16px; font-weight: 800; }
+.ph-h span { display: block; font-size: 14px; color: var(--muted); }
+.ph-row em { display: block; font-style: normal; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
+.ph-row span { font-size: 14px; line-height: 1.4; }
+.ph-row.off span { color: var(--muted); }
+
+/* Guide */
+.video { background: var(--white); border-radius: 20px; overflow: hidden; }
+.vhead { width: 100%; min-height: 60px; border: 0; background: transparent; text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; font-size: 16px; font-weight: 800; }
+.vhead svg { flex: none; transition: transform 0.2s ease; }
+.vhead[aria-expanded="true"] svg { transform: rotate(180deg); }
+.vframe { aspect-ratio: 16 / 9; background: #000; }
+.vframe iframe { width: 100%; height: 100%; border: 0; display: block; }
+.vframe .missing { color: var(--white); font-size: 14px; padding: 20px; }
+.fs { display: flex; flex-direction: column; gap: 10px; }
+.fs-h { font-family: var(--display); font-weight: 700; font-size: 34px; line-height: 1; margin: 8px 0 0; -webkit-text-stroke: 1.2px currentColor; }
+.fs-sub { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.4; }
+.fcard { background: var(--white); border-radius: 18px; overflow: hidden; }
+.fbar { height: 6px; background: var(--lilac); }
+.fcard.l3 .fbar { background: var(--ink); }
+.fbody { padding: 14px 16px 16px; }
+.fbody > b { display: block; font-size: 17px; font-weight: 800; }
+.fl { font-size: 13px; font-weight: 800; margin-top: 12px; }
+.fbody p { margin: 2px 0 0; font-size: 14px; line-height: 1.4; color: var(--muted); }
+
+nav { display: flex; background: var(--white); padding: 6px 6px calc(10px + env(safe-area-inset-bottom, 0px)); flex: none; border-top: 1px solid var(--line); }
+nav button { flex: 1; min-height: 54px; border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; font-weight: 500; color: var(--muted); }
+nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <section class="screen" id="welcome" hidden>
+    <div class="hero"><h2>SBD @<br>Wheelock</h2></div>
+    <div class="act"><button class="primary" id="getStarted">Get Started</button></div>
+  </section>
+
+  <section class="screen" id="loading" hidden>
+    <div class="center"><div class="spin" aria-hidden="true"></div><p>Verifying with Telegram</p></div>
+  </section>
+
+  <section class="screen" id="denied" hidden>
+    <div class="center">
+      <div class="lock"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+      <h2 id="denyTitle"></h2>
+      <p id="denyBody"></p>
+      <button class="primary" id="retry" hidden>Try again</button>
+    </div>
+  </section>
+
+  <section class="screen" id="name" hidden>
+    <div class="hero"><h2 id="hi" aria-hidden="true"></h2></div>
+    <div class="act">
+      <form class="namecard" id="nameForm" novalidate>
+        <label for="nameInput">Your name</label>
+        <input id="nameInput" autocomplete="off" autocapitalize="words" maxlength="24">
+        <p class="err" id="nameErr" role="alert" hidden></p>
+        <button class="primary" id="nameBtn" type="submit">Continue</button>
+        <p class="note">Set once. Ask a team lead to change it.</p>
+      </form>
+    </div>
+  </section>
+
+  <section class="screen" id="count" hidden>
+    <div class="band"><div class="band-row"><h1 class="title" id="myName"></h1><span class="meta" id="today"></span></div></div>
+    <main id="tiles"></main>
+  </section>
+
+  <section class="screen" id="deals" hidden>
+    <div class="band"><div class="band-row"><h2 class="title">Deals</h2><span class="tag">UP TO 40% OFF</span></div></div>
+    <div class="subbar">
+      <div class="pills" role="group" aria-label="Deal type">
+        <button data-deal="vouchers" aria-pressed="true">Vouchers</button>
+        <button data-deal="upgrade" aria-pressed="false">Upgrade</button>
+        <button data-deal="bundles" aria-pressed="false">Bundles</button>
+        <button data-deal="dates" aria-pressed="false">Dates</button>
+      </div>
+    </div>
+    <main id="dealList"></main>
+  </section>
+
+  <section class="screen" id="guide" hidden>
+    <div class="band"><h2 class="title">Guide</h2></div>
+    <main>
+      <div class="video">
+        <button class="vhead" aria-expanded="true" aria-controls="v1" data-part="part1">Lazada SBD briefing part 1<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="vframe" id="v1"></div>
+      </div>
+      <div class="video">
+        <button class="vhead" aria-expanded="false" aria-controls="v2" data-part="part2">Lazada SBD briefing part 2<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="vframe" id="v2" hidden></div>
+      </div>
+      <div class="fs">
+        <h3 class="fs-h">The five steps</h3>
+        <p class="fs-sub">The second demo is always music in a second room at Station 6. The trail always ends at Station 7.</p>
+        <div class="fcard"><div class="fbar"></div><div class="fbody"><b>1 Meet our host (Level 1)</b><div class="fl">Visitor</div><p>Scans the QR, takes the 2-minute quiz, gets a session number (e.g. SBD-0004).</p><div class="fl">You</div><p>Greet. Read the code. Tap <b>Check in</b>.</p></div></div>
+        <div class="fcard"><div class="fbar"></div><div class="fbody"><b>2 Hear what you love (Level 1)</b><div class="fl">Visitor</div><p>Hears their music or film on the right speaker.</p><div class="fl">You</div><p>Tap Start demo. Play the clip. Ask the listening question.</p></div></div>
+        <div class="fcard"><div class="fbar"></div><div class="fbody"><b>3 Feel the system (Level 1)</b><div class="fl">Visitor</div><p>Hears their music in a second room, at Station 6.</p><div class="fl">You</div><p>Group two speakers, then give each its own song.</p></div></div>
+        <div class="fcard"><div class="fbar"></div><div class="fbody"><b>4 Make it yours (Level 1)</b><div class="fl">Visitor</div><p>Sees a starting setup, room by room.</p><div class="fl">You</div><p>Ask room size. Record the outcome.</p></div></div>
+        <div class="fcard l3"><div class="fbar"></div><div class="fbody"><b>5 Take it home (Level 3)</b><div class="fl">Visitor</div><p>Sees the Lazada deal. Can get a quote or visit Level 3.</p><div class="fl">You</div><p>Walk to Station 7. Show the Lazada deal. Close the session.</p></div></div>
+      </div>
+    </main>
+  </section>
+
+  <nav id="nav" hidden>
+    <button data-go="count"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Count</button>
+    <button data-go="deals"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8zM7.5 7.5h.01"/></svg>Deals</button>
+    <button data-go="guide"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></svg>Guide</button>
+  </nav>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+  var cfg = window.SBD_CONFIG || {};
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) {
+    try {
+      tg.ready(); tg.expand();
+      tg.setHeaderColor('#DCC4E0'); tg.setBackgroundColor('#FBF6EC');
+      if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+    } catch (e) { /* older Telegram versions: ignore */ }
+  }
+
+  var COUNTERS = ['quiz', 'l3', 'third'];
+  var session = { name: null, date: null, thirdLabel: 'Leads', counts: { quiz: 0, l3: 0, third: 0 } };
+  var queue = [];            // taps not yet confirmed by the server
+  var flushing = false, flushTimer = null, tab = 'count', deal = 'vouchers';
+
+  // ---------- helpers ----------
+  var userId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || 'anon';
+  var CACHE_KEY = 'sbd.v1.' + userId;
+  var store = {
+    get: function () { try { return JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) { return null; } },
+    set: function (v) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(v)); } catch (e) { /* storage blocked */ } }
+  };
+  function persist() { store.set({ name: session.name, date: session.date, thirdLabel: session.thirdLabel, counts: session.counts, queue: queue }); }
+  function sgDate() {
+    var p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+    var g = function (t) { return p.filter(function (x) { return x.type === t; })[0].value; };
+    return g('year') + '-' + g('month') + '-' + g('day');
+  }
+  function dayLabel() { return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Singapore', weekday: 'short', day: 'numeric', month: 'short' }).format(new Date()); }
+  function uid() { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
+  function haptic() { try { if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light'); } catch (e) { /* ignore */ } }
+  function tidy(s) {
+    return String(s || '').replace(/[^\p{L}\s'’-]/gu, '').replace(/\s+/g, ' ').split(' ')
+      .map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(); }).join(' ');
+  }
+
+  // ---------- API ----------
+  function api(action, body) {
+    if (!cfg.API_URL || /PASTE/.test(cfg.API_URL)) return Promise.reject(new Error('not_configured'));
+    var payload = Object.assign({ action: action, initData: tg ? tg.initData : '' }, body || {});
+    return fetch(cfg.API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow' })
+      .then(function (r) { return r.json(); });
+  }
+
+  // ---------- screens ----------
+  function show(id) {
+    $$('.screen').forEach(function (s) { s.hidden = s.id !== id; });
+    var withNav = ['count', 'deals', 'guide'].indexOf(id) >= 0;
+    var nav = $('#nav'); nav.hidden = !withNav;
+    if (withNav) {
+      $('#' + id).appendChild(nav);
+      $$('#nav button').forEach(function (b) { if (b.dataset.go === id) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+    }
+    if (id === 'count') renderCount();
+    if (id === 'deals') renderDeals();
+    if (id === 'guide') syncVideos();
+  }
+  function deny(title, body, retry) {
+    $('#denyTitle').textContent = title; $('#denyBody').textContent = body; $('#retry').hidden = !retry; show('denied');
+  }
+  function denyFor(code) {
+    if (code === 'not_member') deny('Promoter group only', 'This counter is for members of the SBD promoter group.');
+    else if (code === 'not_verified') deny('Not verified', 'Open the counter from the promoter group in Telegram.');
+    else if (code === 'not_configured') deny('Not set up', 'The app address has not been added yet.');
+    else deny('Can’t connect', 'Check your signal and try again.', true);
+  }
+
+  // ---------- state ----------
+  function pendingDelta(k) { return queue.reduce(function (a, t) { return t.counter === k ? a + t.delta : a; }, 0); }
+  function applyServer(r) {
+    session.date = r.date; session.thirdLabel = r.thirdLabel;
+    if (r.profile) session.name = r.profile.name;
+    COUNTERS.forEach(function (k) { session.counts[k] = Math.max(0, r.counts[k] + pendingDelta(k)); });
+    persist();
+  }
+
+  // ---------- login flow ----------
+  function start() {
+    var cached = store.get();
+    if (cached && cached.name && cached.date === sgDate()) {
+      session.name = cached.name; session.date = cached.date; session.thirdLabel = cached.thirdLabel || 'Leads';
+      session.counts = cached.counts || session.counts; queue = cached.queue || [];
+      tab = 'count'; show('count'); flushSoon();
+      refresh(true);                       // verify in the background
+    } else {
+      if (cached && cached.queue) queue = cached.queue;
+      login();
+    }
+  }
+  function login() {
+    show('loading');
+    api('init').then(function (r) {
+      if (!r.ok) return denyFor(r.error);
+      applyServer(r);
+      if (!r.profile) return showName(r.telegramName);
+      tab = 'count'; show('count'); flushSoon();
+    }).catch(function (e) { denyFor(e && e.message === 'not_configured' ? 'not_configured' : 'network'); });
+  }
+  function refresh(background) {
+    api('init').then(function (r) {
+      if (!r.ok) { if (r.error === 'not_member' || r.error === 'not_verified') denyFor(r.error); return; }
+      applyServer(r);
+      if (!r.profile) return showName(r.telegramName);
+      if (!$('#count').hidden) renderCount();
+    }).catch(function () { /* offline: keep showing the saved numbers */ });
+  }
+
+  // ---------- name screen ----------
+  var prevLen = 0;
+  function mirror(intro) {
+    var txt = tidy($('#nameInput').value);
+    var h = $('#hi'); var L = txt.length + 4;
+    h.style.fontSize = L > 24 ? '34px' : L > 18 ? '44px' : L > 12 ? '54px' : '64px';
+    if (!txt) { h.innerHTML = 'Hi, <span class="ph">your name</span>'; prevLen = 0; return; }
+    var idx = 0;
+    h.innerHTML = 'Hi, ' + txt.split(' ').map(function (w) {
+      var letters = Array.prototype.map.call(w, function (c) {
+        var i = idx++; var isNew = intro || i >= prevLen;
+        return '<span class="ch' + (isNew ? ' in' : '') + '"' + (intro ? ' style="animation-delay:' + (i * 45) + 'ms"' : '') + '>' + c + '</span>';
+      }).join('');
+      idx++;
+      return '<span class="w">' + letters + '</span>';
+    }).join(' ');
+    prevLen = txt.length;
+  }
+  function showName(tgName) {
+    $('#nameInput').value = tidy(((tgName && tgName.first) || '') + ' ' + ((tgName && tgName.last) || ''));
+    $('#nameErr').hidden = true; show('name'); mirror(true);
+  }
+  $('#nameInput').addEventListener('input', function () { mirror(false); });
+  $('#nameForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var n = tidy($('#nameInput').value), err = $('#nameErr'), btn = $('#nameBtn');
+    err.hidden = true;
+    if (n.length < 2) { err.textContent = 'Enter at least 2 letters.'; err.hidden = false; return; }
+    btn.disabled = true;
+    api('setName', { name: n }).then(function (r) {
+      btn.disabled = false;
+      if (r.ok) { applyServer(r); tab = 'count'; show('count'); return; }
+      var msg = { name_taken: 'That name is already taken.', bad_name: 'Use 2 to 24 letters.', name_locked: 'Your name is already set.' }[r.error];
+      if (r.error === 'name_locked') return login();
+      if (r.error === 'not_member' || r.error === 'not_verified') return denyFor(r.error);
+      err.textContent = msg || 'Couldn’t save. Try again.'; err.hidden = false;
+    }).catch(function () { btn.disabled = false; err.textContent = 'No signal. Try again.'; err.hidden = false; });
+  });
+
+  // ---------- count ----------
+  function labelOf(k) { return k === 'quiz' ? 'Quiz done' : k === 'l3' ? 'Sent to L3' : session.thirdLabel; }
+  function renderCount() {
+    $('#myName').textContent = session.name || ''; $('#today').textContent = dayLabel();
+    $('#tiles').innerHTML = COUNTERS.map(function (k) {
+      return '<div class="tile">' +
+        '<button class="add" data-add="' + k + '" aria-label="Add one: ' + labelOf(k) + '"></button>' +
+        '<span class="label">' + labelOf(k) + '</span>' +
+        '<button class="undo" data-undo="' + k + '" aria-label="Remove one: ' + labelOf(k) + '"' + (session.counts[k] ? '' : ' disabled') + '>' +
+        '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg></button>' +
+        '<span class="num" id="n-' + k + '">' + session.counts[k] + '</span>' +
+        '<span class="plus" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></div>';
+    }).join('');
+  }
+  function bump(k, d) {
+    if (session.counts[k] + d < 0) return;
+    session.counts[k] += d;
+    queue.push({ counter: k, delta: d, clientId: uid() });
+    persist();
+    var n = $('#n-' + k); n.textContent = session.counts[k];
+    n.classList.remove('pop'); void n.offsetWidth; if (d > 0) n.classList.add('pop');
+    $('[data-undo="' + k + '"]').disabled = session.counts[k] === 0;
+    haptic(); flushSoon();
+  }
+  $('#tiles').addEventListener('click', function (e) {
+    var a = e.target.closest('[data-add]'); if (a) return bump(a.dataset.add, 1);
+    var u = e.target.closest('[data-undo]'); if (u) return bump(u.dataset.undo, -1);
+  });
+
+  // Taps are sent in small batches. Anything unsent is kept on the phone and retried.
+  function flushSoon(ms) { clearTimeout(flushTimer); flushTimer = setTimeout(flush, ms || 1200); }
+  function flush() {
+    if (flushing || !queue.length) return;
+    flushing = true;
+    var batch = queue.slice(0, 40);
+    api('taps', { taps: batch }).then(function (r) {
+      if (r.ok) {
+        queue = queue.slice(batch.length);
+        applyServer(r);
+        if (!$('#count').hidden) { COUNTERS.forEach(function (k) { var n = $('#n-' + k); if (n) n.textContent = session.counts[k]; var u = $('[data-undo="' + k + '"]'); if (u) u.disabled = session.counts[k] === 0; }); }
+      } else if (r.error === 'rate_limited') { flushSoon(1500); }
+      else if (r.error === 'not_member' || r.error === 'not_verified') { denyFor(r.error); }
+      else if (r.error === 'no_profile') { login(); }
+      else { queue = queue.slice(batch.length); persist(); }         // unusable batch: drop it rather than loop forever
+    }).catch(function () { flushSoon(5000); })
+      .then(function () { flushing = false; if (queue.length) flushSoon(1200); });
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) { flush(); if (session.date && session.date !== sgDate()) refresh(); } });
+  setInterval(function () { if (session.date && session.date !== sgDate() && !flushing) { flush(); refresh(); } }, 60000);
+
+  // ---------- deals ----------
+  var BUNDLES = [
+    { img: 'img/b1.jpg', name: 'Beam Ultra + Sub Mini' },
+    { img: 'img/b2.jpg', name: 'Beam Ultra + Sub Mini + 2 Era 100 SL' },
+    { img: 'img/b3.jpg', name: 'Beam Ultra + Sub Mini + 1 Play' },
+    { img: 'img/b4.jpg', name: 'Arc Ultra + Sub 4 + 1 Play' },
+    { img: 'img/b5.jpg', name: 'Arc Ultra + Sub 4 + 2 Era 300 + 1 Play' }
+  ];
+  var UPGRADES = [
+    { img: 'img/u1.jpg', to: 'Upgrade to Sonos Ace Ultra', off: '$100 OFF' },
+    { img: 'img/u2.jpg', to: 'Upgrade to Beam Ultra', off: '$200 OFF' },
+    { img: 'img/u3.jpg', to: 'Upgrade to a Beam Ultra bundle', off: '$350 OFF', hero: true }
+  ];
+  var PHASES = [
+    { name: 'SBD', when: '9 Nov 12am – 10 Nov 7:59pm', run: ['Campaign pricing (SBD x 11.11)', 'Sonos Store vouchers', 'Wheelock in-store', 'Upgrade', 'Flash (9 Nov only)', 'DBS'], tbd: [], off: [] },
+    { name: '11.11 campaign', when: '10 Nov 8pm – 13 Nov', run: ['Campaign pricing (SBD x 11.11)', 'Sonos Store vouchers', 'Wheelock in-store', 'Upgrade', 'DBS'], tbd: [], off: ['Flash'] },
+    { name: '11.11 After Party', when: '14 – 15 Nov', run: ['Wheelock in-store', 'Upgrade', 'DBS'], tbd: ['Campaign pricing', 'Sonos Store vouchers'], off: ['Flash'] },
+    { name: '11.11 After Party', when: '16 – 17 Nov', run: [], tbd: ['Campaign pricing', 'Sonos Store vouchers'], off: ['Wheelock in-store', 'Upgrade', 'DBS', 'Flash'] }
+  ];
+  function v(o, m, c) { return '<div class="voucher ' + (c || '') + '"><div class="off">' + o + '</div><div class="min">min. spend ' + m + '</div></div>'; }
+  function renderDeals() {
+    var html = '';
+    if (deal === 'vouchers') {
+      html = '<div class="sec">HOW IT STACKS AT CHECKOUT</div>' +
+        '<div class="stackrow"><div><b>Seller</b><span>from the Sonos store</span></div><i>+</i><div><b>Lazada</b><span>from the voucher page</span></div><i>+</i><div><b>DBS</b><span>DBS users only</span></div></div>' +
+        '<p class="rule"><b>= Best price</b>, all applied at checkout. Only one seller voucher per order: Store, Wheelock, Flash and Upgrade are all seller vouchers.</p>' +
+        '<div class="sec">SONOS STORE VOUCHERS</div><div class="vgrid">' + v('$40 OFF', '$200') + v('$80 OFF', '$450') + v('$160 OFF', '$1,000') + v('$300 OFF', '$2,000') + '</div>' +
+        '<div class="sec">IN-STORE EXCLUSIVE · USE 9–15 NOV</div><div class="vgrid">' + v('$350 OFF', '$2,000', 'out') + v('$400 OFF', '$3,000', 'out') + '</div>' +
+        '<div class="sec">FLASH · 9 NOV ONLY</div><div class="slots"><span>12am – 2am</span><span>12pm – 2pm</span><span>6pm – 11:59pm</span></div>' +
+        '<div class="vgrid">' + v('$100 OFF', '$500') + v('$200 OFF', '$1,000') + v('$400 OFF', '$2,000') + '</div>' +
+        '<div class="sec">DBS AT CHECKOUT</div><div class="vgrid">' +
+        '<div class="voucher"><div class="off">$20 OFF</div><div class="min">min. spend $200</div><div class="how">PayLah! instant off</div></div>' +
+        '<div class="voucher"><div class="off">$40 OFF</div><div class="min">min. spend $400</div><div class="how">Instalment Payment Plan</div></div></div>' +
+        '<p class="rule">Applied automatically if the customer has already applied their DBS card.</p>' +
+        '<div class="sec">PICK UP IN STORE</div><p class="rule" style="color:var(--ink);font-size:14px">Order Sonos online, collect at the Sonos Flagship Store, Wheelock Place.</p>';
+    } else if (deal === 'upgrade') {
+      html = '<div class="sec">OWNS AN ACE OR BEAM? UP TO $350</div>' + UPGRADES.map(function (u) {
+        return '<div class="upgrade' + (u.hero ? ' hero' : '') + '"><img src="' + u.img + '" alt=""><div><div class="to">' + u.to + '</div><div class="off">' + u.off + '</div></div></div>';
+      }).join('') + '<div class="sec">HOW TO REDEEM</div><div class="steps2">' +
+        '<div class="step"><span class="dot">1</span><span><b>Snap</b> their Ace or Beam and its serial number</span></div>' +
+        '<div class="step"><span class="dot">2</span><span><b>Visit</b> the pop-up at Wheelock Place, 7–15 Nov</span></div>' +
+        '<div class="step"><span class="dot">3</span><span><b>Verify</b> the photos with our team, from 7 Nov</span></div>' +
+        '<div class="step"><span class="dot">4</span><span><b>Redeem</b> upgrade vouchers, 9–15 Nov</span></div></div>';
+    } else if (deal === 'bundles') {
+      html = '<div class="sec">ONLINE EXCLUSIVE ON LAZADA</div><div class="slots"><span>Beam Ultra</span><span>Ace Ultra – Agave</span></div>' +
+        '<div class="sec">EXCLUSIVE BUNDLE PRICES</div><div class="bgrid">' + BUNDLES.map(function (b) {
+          return '<div class="bundle"><img src="' + b.img + '" alt="' + b.name + '"><div class="info"><span class="pname">' + b.name + '</span><span class="price">Price TBC</span></div></div>';
+        }).join('') + '</div>';
+    } else {
+      var row = function (label, list, cls) { return list.length ? '<div class="ph-row ' + (cls || '') + '"><em>' + label + '</em><span>' + list.join(' · ') + '</span></div>' : ''; };
+      html = '<div class="sec">WHAT RUNS WHEN</div>' + PHASES.map(function (p) {
+        return '<div class="phase"><div class="ph-h"><b>' + p.name + '</b><span>' + p.when + '</span></div>' + row('Running', p.run) + row('To be decided', p.tbd) + row('Not running', p.off, 'off') + '</div>';
+      }).join('') + '<p class="rule">To be decided: monitor, decide after 9 Nov.</p>';
+    }
+    $('#dealList').innerHTML = html; $('#dealList').scrollTop = 0;
+  }
+  $$('[data-deal]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      deal = b.dataset.deal;
+      $$('[data-deal]').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+      renderDeals();
+    });
+  });
+
+  // ---------- guide videos (Loom) ----------
+  function loadFrame(btn) {
+    var box = $('#' + btn.getAttribute('aria-controls')), id = (cfg.LOOM || {})[btn.dataset.part];
+    if (!id || /PASTE/.test(id)) { box.innerHTML = '<div class="missing">Video link not added yet.</div>'; return; }
+    box.innerHTML = '<iframe src="https://www.loom.com/embed/' + encodeURIComponent(id) + '" title="' + btn.textContent + '" allow="fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+  }
+  function syncVideos() {
+    $$('.vhead').forEach(function (b) {
+      var open = b.getAttribute('aria-expanded') === 'true', box = $('#' + b.getAttribute('aria-controls'));
+      box.hidden = !open;
+      if (open && !box.firstChild) loadFrame(b);
+      if (!open) box.innerHTML = '';           // removing the frame stops playback
+    });
+  }
+  $$('.vhead').forEach(function (h) {
+    h.addEventListener('click', function () {
+      var wasOpen = h.getAttribute('aria-expanded') === 'true';
+      $$('.vhead').forEach(function (x) { x.setAttribute('aria-expanded', 'false'); });
+      if (!wasOpen) h.setAttribute('aria-expanded', 'true');
+      syncVideos();
+    });
+  });
+
+  // ---------- wiring ----------
+  $$('#nav button').forEach(function (b) { b.addEventListener('click', function () { tab = b.dataset.go; show(tab); }); });
+  $('#getStarted').addEventListener('click', start);
+  $('#retry').addEventListener('click', function () { login(); });
+
+  show('welcome');
+})();
+</script>
+</body>
+</html>
