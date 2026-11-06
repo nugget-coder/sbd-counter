@@ -509,9 +509,8 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   }
   $$('.vhead').forEach(function (h) {
     h.addEventListener('click', function () {
-      var wasOpen = h.getAttribute('aria-expanded') === 'true';
-      $$('.vhead').forEach(function (x) { x.setAttribute('aria-expanded', 'false'); });
-      if (!wasOpen) h.setAttribute('aria-expanded', 'true');
+      // Each video opens and closes on its own, so both can be open at once.
+      h.setAttribute('aria-expanded', String(h.getAttribute('aria-expanded') !== 'true'));
       syncVideos();
     });
   });
