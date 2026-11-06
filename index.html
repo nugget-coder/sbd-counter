@@ -151,10 +151,10 @@ main > * { flex: 0 0 auto; }
 .qrlabel { align-self: flex-start; font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: var(--muted); }
 .qrcard img { width: 200px; height: 200px; display: block; }
 .qrhint { font-size: 13px; color: var(--muted); }
-.qrfull { position: absolute; inset: 0; z-index: 20; background: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; }
+.qrfull { position: absolute; inset: 0; z-index: 20; background: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: calc(24px + var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px)) 24px 100px; }
 .qrfull img { width: min(88%, 520px); height: auto; aspect-ratio: 1 / 1; display: block; }
 .qrfull p { margin: 0; font-size: 18px; font-weight: 800; color: var(--ink); }
-.qrclose { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--white); display: flex; align-items: center; justify-content: center; }
+.qrclose { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(28px + env(safe-area-inset-bottom, 0px)); width: 56px; height: 56px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--white); display: flex; align-items: center; justify-content: center; }
 .quizcard { background: var(--white); border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 8px; }
 .quizcard b { font-size: 18px; font-weight: 800; }
 .quizcard p { margin: 0 0 6px; font-size: 14px; color: var(--muted); line-height: 1.4; }
@@ -563,8 +563,16 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   });
 
   // Customer quiz QR: tap to show it full screen, tap anywhere to close.
-  document.getElementById('qrOpen').addEventListener('click', function () { document.getElementById('qrFull').hidden = false; });
-  document.getElementById('qrFull').addEventListener('click', function () { document.getElementById('qrFull').hidden = true; });
+  // Telegram 8.0+ can hide its own top bar so the QR fills the whole phone screen.
+  function tgFullscreen(on) {
+    try {
+      if (!tg || !tg.isVersionAtLeast || !tg.isVersionAtLeast('8.0')) return;
+      if (on && !tg.isFullscreen) tg.requestFullscreen();
+      if (!on && tg.isFullscreen) tg.exitFullscreen();
+    } catch (e) { /* older Telegram: stay as is */ }
+  }
+  document.getElementById('qrOpen').addEventListener('click', function () { document.getElementById('qrFull').hidden = false; tgFullscreen(true); });
+  document.getElementById('qrFull').addEventListener('click', function () { document.getElementById('qrFull').hidden = true; tgFullscreen(false); });
 
   // ---------- wiring ----------
   $$('#nav button').forEach(function (b) { b.addEventListener('click', function () { tab = b.dataset.go; show(tab); }); });
