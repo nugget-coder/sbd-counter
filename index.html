@@ -155,6 +155,13 @@ main > * { flex: 0 0 auto; }
 .qrlabel { align-self: flex-start; font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: var(--muted); }
 .qrcard img { width: 200px; height: 200px; display: block; }
 .qrhint { font-size: 13px; color: var(--muted); }
+.gl { display: flex; flex-direction: column; gap: 10px; }
+.zoomimg { display: block; width: 100%; padding: 8px; border: 0; background: var(--white); border-radius: 18px; }
+.zoomimg img { width: 100%; display: block; border-radius: 10px; }
+.imgfull { position: absolute; inset: 0; z-index: 20; background: #FFFFFF; }
+.imgfull .pan { position: absolute; inset: 0; overflow: auto; -webkit-overflow-scrolling: touch; display: flex; align-items: center; }
+.imgfull .pan img { flex: none; width: 240%; max-width: none; height: auto; display: block; }
+.imgfull .qrclose { z-index: 2; }
 .qrfull { position: absolute; inset: 0; z-index: 20; background: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: calc(24px + var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px)) 24px 100px; }
 .qrfull img { width: min(88%, 520px); height: auto; aspect-ratio: 1 / 1; display: block; }
 .qrfull p { margin: 0; font-size: 18px; font-weight: 800; color: var(--ink); }
@@ -240,6 +247,14 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
         <button class="vhead" aria-expanded="false" aria-controls="v2" data-part="part2"><span class="vt">Lazada SBD briefing part 2</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
         <div class="vframe" id="v2" hidden></div>
       </div>
+      <div class="gl">
+        <h3 class="fs-h">The pop-up at a glance</h3>
+        <p class="fs-sub">Crowds arrive from the B1 escalator and split to Side A and Side B. Tap a picture to see it bigger.</p>
+        <button class="zoomimg" type="button" aria-label="Enlarge the pop-up floor plan"><img src="img/glance.jpg" alt="Floor plan: Side A and Side B around the atrium, escalator from B1 at the top, escalator up to L3 at the bottom, with Inspire, Educate and Convert zones"></button>
+        <h3 class="fs-h">Overview of pop-up</h3>
+        <button class="zoomimg" type="button" aria-label="Enlarge Side A"><img src="img/overview-a.jpg" alt="Side A of the pop-up, from Marks and Spencer to the escalator up to L3"></button>
+        <button class="zoomimg" type="button" aria-label="Enlarge Side B"><img src="img/overview-b.jpg" alt="Side B of the pop-up, from the escalator to L3 to Marks and Spencer"></button>
+      </div>
       <div class="fs">
         <h3 class="fs-h">The five steps</h3>
         <p class="fs-sub">The second demo is always music in a second room at Station 6. The trail always ends at Station 7.</p>
@@ -252,6 +267,10 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     </main>
   </section>
 
+  <div class="imgfull" id="imgFull" role="dialog" aria-label="Enlarged picture" hidden>
+    <div class="pan" id="imgPan"><img id="imgFullImg" alt=""></div>
+    <button class="qrclose" id="imgClose" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
   <div class="qrfull" id="qrFull" role="dialog" aria-label="Customer quiz QR code" hidden>
     <img src="img/quiz-qr.svg" alt="QR code for the Sonos quiz">
     <p>Scan to take the quiz</p>
@@ -600,6 +619,19 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     if (tg && tg.openLink) tg.openLink(QUIZ_URL, { try_instant_view: false });
     else window.open(QUIZ_URL, '_blank', 'noopener');
   });
+
+  // Guide pictures: tap to see them bigger, swipe to look around; only the X closes.
+  document.querySelectorAll('.zoomimg').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var full = document.getElementById('imgFull'), pan = document.getElementById('imgPan'), img = document.getElementById('imgFullImg');
+      var src = b.querySelector('img');
+      var centre = function () { pan.scrollLeft = (pan.scrollWidth - pan.clientWidth) / 2; };
+      img.onload = centre; img.alt = src.alt; img.src = src.getAttribute('src');
+      full.hidden = false;
+      if (img.complete) centre();
+    });
+  });
+  document.getElementById('imgClose').addEventListener('click', function () { document.getElementById('imgFull').hidden = true; });
 
   // Customer quiz QR: tap to show it full screen; only the X closes it.
   // Telegram 8.0+ can hide its own top bar so the QR fills the whole phone screen.
