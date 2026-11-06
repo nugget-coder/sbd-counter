@@ -85,6 +85,13 @@ main > * { flex: 0 0 auto; }
 .undo:disabled { opacity: 0.25; cursor: default; }
 
 /* Deals */
+.formula { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+.formula i { align-self: center; font-style: normal; font-weight: 800; font-size: 22px; line-height: 1; }
+.fcard { background: var(--white); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
+.fcard b { font-size: 16px; font-weight: 800; }
+.fcard span { font-size: 14px; color: var(--muted); }
+.fcard.best { background: var(--ink); color: var(--white); }
+.fcard.best span { color: var(--lilac); }
 .sec { font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: var(--muted); margin-top: 4px; }
 .rule { margin: 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
 .rule b { color: var(--ink); }
@@ -227,13 +234,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   </section>
 
   <section class="screen" id="deals" hidden>
-    <div class="band"><div class="band-row"><h2 class="title">Deals</h2><span class="tag">UP TO 40% OFF</span></div></div>
-    <div class="subbar">
-      <div class="pills" role="group" aria-label="Deal type">
-        <button data-deal="upgrade" aria-pressed="true">Upgrade</button>
-        <button data-deal="bundles" aria-pressed="false">Bundles</button>
-      </div>
-    </div>
+    <div class="band"><div class="band-row"><h2 class="title">Deals</h2></div></div>
     <main id="dealList"></main>
   </section>
 
@@ -513,48 +514,14 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   ];
   function v(o, m, c) { return '<div class="voucher ' + (c || '') + '"><div class="off">' + o + '</div><div class="min">min. spend ' + m + '</div></div>'; }
   function renderDeals() {
-    var html = '';
-    if (deal === 'vouchers') {
-      html = '<div class="sec">HOW IT STACKS AT CHECKOUT</div>' +
-        '<div class="stackrow"><div><b>Seller</b><span>from the Sonos store</span></div><i>+</i><div><b>Lazada</b><span>from the voucher page</span></div><i>+</i><div><b>DBS</b><span>DBS users only</span></div></div>' +
-        '<p class="rule"><b>= Best price</b>, all applied at checkout. Only one seller voucher per order: Store, Wheelock, Flash and Upgrade are all seller vouchers.</p>' +
-        '<div class="sec">SONOS STORE VOUCHERS</div><div class="vgrid">' + v('$40 OFF', '$200') + v('$80 OFF', '$450') + v('$160 OFF', '$1,000') + v('$300 OFF', '$2,000') + '</div>' +
-        '<div class="sec">IN-STORE EXCLUSIVE · USE 9–15 NOV</div><div class="vgrid">' + v('$350 OFF', '$2,000', 'out') + v('$400 OFF', '$3,000', 'out') + '</div>' +
-        '<div class="sec">FLASH · 9 NOV ONLY</div><div class="slots"><span>12am – 2am</span><span>12pm – 2pm</span><span>6pm – 11:59pm</span></div>' +
-        '<div class="vgrid">' + v('$100 OFF', '$500') + v('$200 OFF', '$1,000') + v('$400 OFF', '$2,000') + '</div>' +
-        '<div class="sec">DBS AT CHECKOUT</div><div class="vgrid">' +
-        '<div class="voucher"><div class="off">$20 OFF</div><div class="min">min. spend $200</div><div class="how">PayLah! instant off</div></div>' +
-        '<div class="voucher"><div class="off">$40 OFF</div><div class="min">min. spend $400</div><div class="how">Instalment Payment Plan</div></div></div>' +
-        '<p class="rule">Applied automatically if the customer has already applied their DBS card.</p>' +
-        '<div class="sec">PICK UP IN STORE</div><p class="rule" style="color:var(--ink);font-size:14px">Order Sonos online, collect at the Sonos Flagship Store, Wheelock Place.</p>';
-    } else if (deal === 'upgrade') {
-      html = '<div class="sec">OWNS AN ACE OR BEAM? UP TO $350</div>' + UPGRADES.map(function (u) {
-        return '<div class="upgrade' + (u.hero ? ' hero' : '') + '"><img src="' + u.img + '" alt=""><div><div class="to">' + u.to + '</div><div class="off">' + u.off + '</div></div></div>';
-      }).join('') + '<div class="sec">HOW TO REDEEM</div><div class="steps2">' +
-        '<div class="step"><span class="dot">1</span><span><b>Snap</b> their Ace or Beam and its serial number</span></div>' +
-        '<div class="step"><span class="dot">2</span><span><b>Visit</b> the pop-up at Wheelock Place, 7–15 Nov</span></div>' +
-        '<div class="step"><span class="dot">3</span><span><b>Verify</b> the photos with our team, from 7 Nov</span></div>' +
-        '<div class="step"><span class="dot">4</span><span><b>Redeem</b> upgrade vouchers, 9–15 Nov</span></div></div>';
-    } else if (deal === 'bundles') {
-      html = '<div class="sec">ONLINE EXCLUSIVE ON LAZADA</div><div class="slots"><span>Beam Ultra</span><span>Ace Ultra – Agave</span></div>' +
-        '<div class="sec">EXCLUSIVE BUNDLE PRICES</div><div class="bgrid">' + BUNDLES.map(function (b) {
-          return '<div class="bundle"><img src="' + b.img + '" alt="' + b.name + '"><div class="info"><span class="pname">' + b.name + '</span><span class="price">Price TBC</span></div></div>';
-        }).join('') + '</div>';
-    } else {
-      var row = function (label, list, cls) { return list.length ? '<div class="ph-row ' + (cls || '') + '"><em>' + label + '</em><span>' + list.join(' · ') + '</span></div>' : ''; };
-      html = '<div class="sec">WHAT RUNS WHEN</div>' + PHASES.map(function (p) {
-        return '<div class="phase"><div class="ph-h"><b>' + p.name + '</b><span>' + p.when + '</span></div>' + row('Running', p.run) + row('To be decided', p.tbd) + row('Not running', p.off, 'off') + '</div>';
-      }).join('') + '<p class="rule">To be decided: monitor, decide after 9 Nov.</p>';
-    }
-    $('#dealList').innerHTML = html; $('#dealList').scrollTop = 0;
+    $('#dealList').innerHTML = '<div class="sec">WINNING FORMULA FOR THE BEST PRICE</div>' +
+      '<p class="rule">Collect and stack these vouchers at checkout.</p>' +
+      '<div class="formula">' +
+      '<div class="fcard"><b>Seller Vouchers</b><span>Collect from the Sonos store</span></div><i>+</i>' +
+      '<div class="fcard"><b>Platform Vouchers</b><span>Collect from Lazada Voucher Page</span></div><i>+</i>' +
+      '<div class="fcard"><b>DBS Bank Vouchers</b><span>Only if customer is a DBS user</span></div><i>=</i>' +
+      '<div class="fcard best"><b>Best price</b><span>All stacked at checkout</span></div></div>';
   }
-  $$('[data-deal]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      deal = b.dataset.deal;
-      $$('[data-deal]').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
-      renderDeals();
-    });
-  });
 
   // ---------- guide videos (Loom) ----------
   // Videos are served from this site so the app knows when one ends.
