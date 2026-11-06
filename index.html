@@ -190,10 +190,8 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     <div class="band"><div class="band-row"><h2 class="title">Deals</h2><span class="tag">UP TO 40% OFF</span></div></div>
     <div class="subbar">
       <div class="pills" role="group" aria-label="Deal type">
-        <button data-deal="vouchers" aria-pressed="true">Vouchers</button>
-        <button data-deal="upgrade" aria-pressed="false">Upgrade</button>
+        <button data-deal="upgrade" aria-pressed="true">Upgrade</button>
         <button data-deal="bundles" aria-pressed="false">Bundles</button>
-        <button data-deal="dates" aria-pressed="false">Dates</button>
       </div>
     </div>
     <main id="dealList"></main>
@@ -248,7 +246,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   var COUNTERS = ['quiz', 'l3', 'third'];
   var session = { name: null, date: null, thirdLabel: 'Leads', counts: { quiz: 0, l3: 0, third: 0 } };
   var queue = [];            // taps not yet confirmed by the server
-  var flushing = false, flushTimer = null, tab = 'count', deal = 'vouchers';
+  var flushing = false, flushTimer = null, tab = 'count', deal = 'upgrade';
 
   // ---------- helpers ----------
   var userId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || 'anon';
