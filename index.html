@@ -137,6 +137,9 @@ main > * { flex: 0 0 auto; }
 .fs-h { font-family: var(--display); font-weight: 700; font-size: 34px; line-height: 1; margin: 8px 0 0; -webkit-text-stroke: 1.2px currentColor; }
 .fs-sub { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.4; }
 .fcard { background: var(--white); border-radius: 18px; overflow: hidden; }
+.fsrow { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+.fsrow::-webkit-scrollbar { display: none; }
+.fsrow .fcard { flex: 0 0 84%; scroll-snap-align: start; }
 .fbar { height: 6px; background: var(--lilac); }
 .fcard.l3 .fbar { background: var(--ink); }
 .fbody { padding: 14px 16px 16px; }
@@ -213,11 +216,11 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
       <div class="fs">
         <h3 class="fs-h">The five steps</h3>
         <p class="fs-sub">The second demo is always music in a second room at Station 6. The trail always ends at Station 7.</p>
-        <div class="fcard"><div class="fbar"></div><div class="fbody"><b>1 Meet our host (Level 1)</b><div class="fl">Visitor</div><p>Scans the QR, takes the 2-minute quiz, gets a session number (e.g. SBD-0004).</p><div class="fl">You</div><p>Greet. Read the code. Tap <b>Check in</b>.</p></div></div>
+        <div class="fsrow"><div class="fcard"><div class="fbar"></div><div class="fbody"><b>1 Meet our host (Level 1)</b><div class="fl">Visitor</div><p>Scans the QR, takes the 2-minute quiz, gets a session number (e.g. SBD-0004).</p><div class="fl">You</div><p>Greet. Read the code. Tap <b>Check in</b>.</p></div></div>
         <div class="fcard"><div class="fbar"></div><div class="fbody"><b>2 Hear what you love (Level 1)</b><div class="fl">Visitor</div><p>Hears their music or film on the right speaker.</p><div class="fl">You</div><p>Tap Start demo. Play the clip. Ask the listening question.</p></div></div>
         <div class="fcard"><div class="fbar"></div><div class="fbody"><b>3 Feel the system (Level 1)</b><div class="fl">Visitor</div><p>Hears their music in a second room, at Station 6.</p><div class="fl">You</div><p>Group two speakers, then give each its own song.</p></div></div>
         <div class="fcard"><div class="fbar"></div><div class="fbody"><b>4 Make it yours (Level 1)</b><div class="fl">Visitor</div><p>Sees a starting setup, room by room.</p><div class="fl">You</div><p>Ask room size. Record the outcome.</p></div></div>
-        <div class="fcard l3"><div class="fbar"></div><div class="fbody"><b>5 Take it home (Level 3)</b><div class="fl">Visitor</div><p>Sees the Lazada deal. Can get a quote or visit Level 3.</p><div class="fl">You</div><p>Walk to Station 7. Show the Lazada deal. Close the session.</p></div></div>
+        <div class="fcard l3"><div class="fbar"></div><div class="fbody"><b>5 Take it home (Level 3)</b><div class="fl">Visitor</div><p>Sees the Lazada deal. Can get a quote or visit Level 3.</p><div class="fl">You</div><p>Walk to Station 7. Show the Lazada deal. Close the session.</p></div></div></div>
       </div>
     </main>
   </section>
