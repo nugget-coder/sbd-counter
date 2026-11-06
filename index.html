@@ -147,6 +147,14 @@ main > * { flex: 0 0 auto; }
 .fl { font-size: 13px; font-weight: 800; margin-top: 12px; }
 .fbody p { margin: 2px 0 0; font-size: 14px; line-height: 1.4; color: var(--muted); }
 
+.qrcard { width: 100%; border: 0; background: var(--white); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.qrlabel { align-self: flex-start; font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: var(--muted); }
+.qrcard img { width: 200px; height: 200px; display: block; }
+.qrhint { font-size: 13px; color: var(--muted); }
+.qrfull { position: absolute; inset: 0; z-index: 20; background: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; }
+.qrfull img { width: min(88%, 520px); height: auto; aspect-ratio: 1 / 1; display: block; }
+.qrfull p { margin: 0; font-size: 18px; font-weight: 800; color: var(--ink); }
+.qrclose { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--white); display: flex; align-items: center; justify-content: center; }
 .quizcard { background: var(--white); border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 8px; }
 .quizcard b { font-size: 18px; font-weight: 800; }
 .quizcard p { margin: 0 0 6px; font-size: 14px; color: var(--muted); line-height: 1.4; }
@@ -197,6 +205,11 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   <section class="screen" id="quiz" hidden>
     <div class="band"><h2 class="title">Quiz</h2></div>
     <main>
+      <button class="qrcard" id="qrOpen" aria-label="Show the customer quiz QR code full screen">
+        <span class="qrlabel">FOR CUSTOMERS</span>
+        <img src="img/quiz-qr.svg" alt="QR code for the Sonos quiz">
+        <span class="qrhint">Scan to take the quiz · Tap to enlarge</span>
+      </button>
       <div class="quizcard">
         <b>Staff tablet</b>
         <p>Check visitors in, start demos and close sessions.</p>
@@ -238,6 +251,12 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
       </div>
     </main>
   </section>
+
+  <div class="qrfull" id="qrFull" role="dialog" aria-label="Customer quiz QR code" hidden>
+    <img src="img/quiz-qr.svg" alt="QR code for the Sonos quiz">
+    <p>Scan to take the quiz</p>
+    <button class="qrclose" id="qrClose" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
 
   <nav id="nav" hidden>
     <button data-go="count"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Count</button>
@@ -542,6 +561,10 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     if (tg && tg.openLink) tg.openLink(QUIZ_URL, { try_instant_view: false });
     else window.open(QUIZ_URL, '_blank', 'noopener');
   });
+
+  // Customer quiz QR: tap to show it full screen, tap anywhere to close.
+  document.getElementById('qrOpen').addEventListener('click', function () { document.getElementById('qrFull').hidden = false; });
+  document.getElementById('qrFull').addEventListener('click', function () { document.getElementById('qrFull').hidden = true; });
 
   // ---------- wiring ----------
   $$('#nav button').forEach(function (b) { b.addEventListener('click', function () { tab = b.dataset.go; show(tab); }); });
