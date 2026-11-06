@@ -123,6 +123,7 @@ main > * { flex: 0 0 auto; }
 .upgrade .to { font-size: 14px; font-weight: 600; line-height: 1.3; }
 .upgrade .off { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
 .steps2 { background: var(--white); border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.step .sd { display: block; font-size: 13px; color: var(--muted); line-height: 1.35; margin-top: 1px; }
 .step { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; line-height: 1.35; }
 .dot { width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: var(--white); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex: none; }
 .phase { background: var(--white); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -514,13 +515,19 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   ];
   function v(o, m, c) { return '<div class="voucher ' + (c || '') + '"><div class="off">' + o + '</div><div class="min">min. spend ' + m + '</div></div>'; }
   function renderDeals() {
-    $('#dealList').innerHTML = '<div class="sec">WINNING FORMULA FOR THE BEST PRICE</div>' +
-      '<p class="rule">Collect and stack these vouchers at checkout.</p>' +
-      '<div class="formula">' +
-      '<div class="fcard"><b>Seller Vouchers</b><span>Collect from the Sonos store</span></div><i>+</i>' +
-      '<div class="fcard"><b>Platform Vouchers</b><span>Collect from Lazada Voucher Page</span></div><i>+</i>' +
-      '<div class="fcard"><b>DBS Bank Vouchers</b><span>Only if customer is a DBS user</span></div><i>=</i>' +
-      '<div class="fcard best"><b>Best price</b><span>All stacked at checkout</span></div></div>';
+    var st = function (n, t, d) { return '<div class="step"><span class="dot">' + n + '</span><span><b>' + t + '</b><span class="sd">' + d + '</span></span></div>'; };
+    $('#dealList').innerHTML = '<div class="sec">WINNING FORMULA FOR THE BEST PRICE</div><div class="steps2">' +
+      st(1, 'Seller Vouchers', 'Collect from the Sonos store') +
+      st(2, 'Platform Vouchers', 'Collect from Lazada Voucher Page') +
+      st(3, 'DBS Bank Vouchers', 'Only if customer is a DBS user') + '</div>' +
+      '<p class="rule">Stack all three at checkout for the best price.</p>' +
+      '<div class="sec">OWNS AN ACE OR BEAM? UP TO $350</div>' + UPGRADES.map(function (u) {
+        return '<div class="upgrade"><img src="' + u.img + '" alt=""><div><div class="to">' + u.to + '</div><div class="off">' + u.off + '</div></div></div>';
+      }).join('') + '<div class="sec">HOW TO REDEEM</div><div class="steps2">' +
+      st(1, 'Snap', 'Their Ace or Beam and its serial number') +
+      st(2, 'Visit', 'The pop-up at Wheelock Place, 7–15 Nov') +
+      st(3, 'Verify', 'The photos with our team, from 7 Nov') +
+      st(4, 'Redeem', 'Upgrade vouchers, 9–15 Nov') + '</div>';
   }
 
   // ---------- guide videos (Loom) ----------
