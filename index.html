@@ -130,7 +130,11 @@ main > * { flex: 0 0 auto; }
 .vhead { width: 100%; min-height: 60px; border: 0; background: transparent; text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; font-size: 16px; font-weight: 800; }
 .vhead svg { flex: none; transition: transform 0.2s ease; }
 .vhead[aria-expanded="true"] svg { transform: rotate(180deg); }
-.vframe { aspect-ratio: 16 / 9; background: #000; }
+.vframe { position: relative; aspect-ratio: 1100 / 716; background: #000; }
+.vframe video { width: 100%; height: 100%; display: block; }
+.donewrap { position: absolute; inset: 0; background: rgba(26,26,26,0.6); display: flex; align-items: center; justify-content: center; }
+.donebtn { height: 52px; padding: 0 26px; border: 0; border-radius: 999px; background: var(--lilac); color: var(--ink); font-size: 16px; font-weight: 800; }
+.watched { margin-left: 8px; font-size: 12px; font-weight: 800; letter-spacing: 0.04em; background: var(--lilac-soft); border-radius: 999px; padding: 3px 9px; vertical-align: middle; }
 .vframe iframe { width: 100%; height: 100%; border: 0; display: block; }
 .vframe .missing { color: var(--white); font-size: 14px; padding: 20px; }
 .fs { display: flex; flex-direction: column; gap: 10px; }
@@ -208,12 +212,12 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
       <button class="qrcard" id="qrOpen" aria-label="Show the customer quiz QR code full screen">
         <span class="qrlabel">FOR CUSTOMERS</span>
         <img src="img/quiz-qr.svg" alt="QR code for the Sonos quiz">
-        <span class="qrhint">Scan to take the quiz · Tap to enlarge</span>
+        <span class="qrhint">Tap to enlarge</span>
       </button>
       <div class="quizcard">
-        <b>Staff tablet</b>
+        <b>Quiz Backend</b>
         <p>Check visitors in, start demos and close sessions.</p>
-        <button class="primary" id="openQuiz">Open staff tablet</button>
+        <button class="primary" id="openQuiz">Open Quiz Backend</button>
       </div>
     </main>
   </section>
@@ -233,11 +237,11 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     <div class="band"><h2 class="title">Guide</h2></div>
     <main>
       <div class="video">
-        <button class="vhead" aria-expanded="true" aria-controls="v1" data-part="part1">Lazada SBD briefing part 1<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+        <button class="vhead" aria-expanded="true" aria-controls="v1" data-part="part1"><span class="vt">Lazada SBD briefing part 1</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
         <div class="vframe" id="v1"></div>
       </div>
       <div class="video">
-        <button class="vhead" aria-expanded="false" aria-controls="v2" data-part="part2">Lazada SBD briefing part 2<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+        <button class="vhead" aria-expanded="false" aria-controls="v2" data-part="part2"><span class="vt">Lazada SBD briefing part 2</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
         <div class="vframe" id="v2" hidden></div>
       </div>
       <div class="fs">
@@ -286,6 +290,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   var session = { name: null, date: null, thirdLabel: 'Leads', counts: { quiz: 0, l3: 0, third: 0 } };
   var queue = [];            // taps not yet confirmed by the server
   var flushing = false, flushTimer = null, tab = 'count', deal = 'upgrade';
+  var watched = [], pendingWatched = [];   // video parts marked "Done watching"; pending = not yet saved
 
   // ---------- helpers ----------
   var userId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || 'anon';
@@ -294,7 +299,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     get: function () { try { return JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) { return null; } },
     set: function (v) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(v)); } catch (e) { /* storage blocked */ } }
   };
-  function persist() { store.set({ name: session.name, date: session.date, thirdLabel: session.thirdLabel, counts: session.counts, queue: queue }); }
+  function persist() { store.set({ name: session.name, date: session.date, thirdLabel: session.thirdLabel, counts: session.counts, queue: queue, watched: watched, pendingWatched: pendingWatched }); }
   function sgDate() {
     var p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
     var g = function (t) { return p.filter(function (x) { return x.type === t; })[0].value; };
@@ -345,12 +350,14 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     session.date = r.date; session.thirdLabel = r.thirdLabel;
     if (r.profile) session.name = r.profile.name;
     COUNTERS.forEach(function (k) { session.counts[k] = Math.max(0, r.counts[k] + pendingDelta(k)); });
+    if (r.watched) r.watched.concat(pendingWatched).forEach(function (n) { n = String(n); if (watched.indexOf(n) < 0) watched.push(n); });
     persist();
   }
 
   // ---------- login flow ----------
   function start() {
     var cached = store.get();
+    if (cached) { watched = cached.watched || []; pendingWatched = cached.pendingWatched || []; }
     if (cached && cached.name && cached.date === sgDate()) {
       session.name = cached.name; session.date = cached.date; session.thirdLabel = cached.thirdLabel || 'Leads';
       session.counts = cached.counts || session.counts; queue = cached.queue || [];
@@ -367,7 +374,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
       if (!r.ok) return denyFor(r.error);
       applyServer(r);
       if (!r.profile) return showName(r.telegramName);
-      tab = 'count'; show('count'); flushSoon();
+      tab = 'count'; show('count'); flushSoon(); sendWatched();
     }).catch(function (e) { denyFor(e && e.message === 'not_configured' ? 'not_configured' : 'network'); });
   }
   function refresh(background) {
@@ -376,6 +383,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
       applyServer(r);
       if (!r.profile) return showName(r.telegramName);
       if (!$('#count').hidden) renderCount();
+      sendWatched();
     }).catch(function () { /* offline: keep showing the saved numbers */ });
   }
 
@@ -533,18 +541,53 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   });
 
   // ---------- guide videos (Loom) ----------
+  // Videos are served from this site so the app knows when one ends.
+  var VIDEOS = { part1: 'video/part1.mp4', part2: 'video/part2.mp4' };
+  function partNo(btn) { return btn.dataset.part.replace('part', ''); }
   function loadFrame(btn) {
-    var box = $('#' + btn.getAttribute('aria-controls')), id = (cfg.LOOM || {})[btn.dataset.part];
-    if (!id || /PASTE/.test(id)) { box.innerHTML = '<div class="missing">Video link not added yet.</div>'; return; }
-    box.innerHTML = '<iframe src="https://www.loom.com/embed/' + encodeURIComponent(id) + '" title="' + btn.textContent + '" allow="fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+    var box = $('#' + btn.getAttribute('aria-controls')), n = partNo(btn);
+    box.innerHTML = '<video controls playsinline preload="metadata" src="' + VIDEOS[btn.dataset.part] + '"></video>' +
+      '<div class="donewrap" hidden><button class="donebtn" type="button">Done watching</button></div>';
+    var vid = box.querySelector('video'), wrap = box.querySelector('.donewrap');
+    vid.addEventListener('ended', function () {
+      try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen(); } catch (e) { /* ignore */ }
+      wrap.hidden = false;
+    });
+    vid.addEventListener('play', function () { wrap.hidden = true; });
+    wrap.querySelector('button').addEventListener('click', function () { wrap.hidden = true; markWatched(n); });
   }
   function syncVideos() {
     $$('.vhead').forEach(function (b) {
       var open = b.getAttribute('aria-expanded') === 'true', box = $('#' + b.getAttribute('aria-controls'));
       box.hidden = !open;
       if (open && !box.firstChild) loadFrame(b);
-      if (!open) box.innerHTML = '';           // removing the frame stops playback
+      if (!open) { var v = box.querySelector('video'); if (v) v.pause(); }
     });
+    renderWatched();
+  }
+  function renderWatched() {
+    $$('.vhead').forEach(function (b) {
+      var vt = b.querySelector('.vt');
+      if (vt && watched.indexOf(partNo(b)) >= 0 && !vt.querySelector('.watched')) vt.insertAdjacentHTML('beforeend', '<span class="watched">Watched</span>');
+    });
+  }
+  function markWatched(n) {
+    if (watched.indexOf(n) < 0) watched.push(n);
+    if (pendingWatched.indexOf(n) < 0) pendingWatched.push(n);
+    persist(); renderWatched(); sendWatched();
+  }
+  var sendingWatched = false;
+  function sendWatched() {
+    if (sendingWatched || !pendingWatched.length) return;
+    sendingWatched = true;
+    var n = pendingWatched[0];
+    api('watched', { part: n }).then(function (r) {
+      sendingWatched = false;
+      if (!r.ok) return;                     // kept and retried on the next launch
+      pendingWatched = pendingWatched.filter(function (x) { return x !== n; });
+      applyServer(r); renderWatched();
+      if (pendingWatched.length) sendWatched();
+    }).catch(function () { sendingWatched = false; });
   }
   $$('.vhead').forEach(function (h) {
     h.addEventListener('click', function () {

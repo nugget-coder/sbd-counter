@@ -1,0 +1,5 @@
+{
+  "headers": [
+    { "source": "/video/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] }
+  ]
+}
