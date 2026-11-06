@@ -562,7 +562,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     else window.open(QUIZ_URL, '_blank', 'noopener');
   });
 
-  // Customer quiz QR: tap to show it full screen, tap anywhere to close.
+  // Customer quiz QR: tap to show it full screen; only the X closes it.
   // Telegram 8.0+ can hide its own top bar so the QR fills the whole phone screen.
   function tgFullscreen(on) {
     try {
@@ -572,7 +572,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     } catch (e) { /* older Telegram: stay as is */ }
   }
   document.getElementById('qrOpen').addEventListener('click', function () { document.getElementById('qrFull').hidden = false; tgFullscreen(true); });
-  document.getElementById('qrFull').addEventListener('click', function () { document.getElementById('qrFull').hidden = true; tgFullscreen(false); });
+  document.getElementById('qrClose').addEventListener('click', function () { document.getElementById('qrFull').hidden = true; tgFullscreen(false); });
 
   // ---------- wiring ----------
   $$('#nav button').forEach(function (b) { b.addEventListener('click', function () { tab = b.dataset.go; show(tab); }); });
