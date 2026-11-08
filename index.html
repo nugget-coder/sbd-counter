@@ -42,6 +42,7 @@ main > * { flex: 0 0 auto; }
 .pills button[aria-pressed="true"] { background: var(--ink); color: var(--white); font-weight: 700; }
 .primary { height: 56px; border: 0; border-radius: 999px; background: var(--ink); color: var(--white); font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center; width: 100%; }
 .primary:disabled { opacity: 0.4; }
+.qpin { margin: 0; text-align: center; font-size: 17px; font-weight: 700; letter-spacing: 0.04em; }
 
 /* Welcome and name screens */
 #welcome, #name { background: var(--lilac); }
@@ -231,6 +232,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
         <span class="qrhint">Tap to enlarge</span>
       </button>
       <button class="primary" id="openQuiz">Open Quiz Backend</button>
+      <p class="qpin" id="quizPin" hidden></p>
     </main>
   </section>
 
@@ -367,6 +369,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   function applyServer(r) {
     session.date = r.date; session.thirdLabel = r.thirdLabel;
     if (r.profile) session.name = r.profile.name;
+    var pin = $('#quizPin'); pin.textContent = r.quizPin ? 'PIN: ' + r.quizPin : ''; pin.hidden = !r.quizPin;
     COUNTERS.forEach(function (k) { session.counts[k] = Math.max(0, r.counts[k] + pendingDelta(k)); });
     if (r.watched) r.watched.concat(pendingWatched).forEach(function (n) { n = String(n); if (watched.indexOf(n) < 0) watched.push(n); });
     persist();
