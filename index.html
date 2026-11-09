@@ -306,7 +306,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     } catch (e) { /* older Telegram versions: ignore */ }
   }
 
-  var COUNTERS = ['quiz', 'l3', 'third'];
+  var COUNTERS = ['quiz', 'third'];   // People Engaged (quiz column) and Carted Out
   var session = { name: null, date: null, thirdLabel: 'Leads', counts: { quiz: 0, l3: 0, third: 0 } };
   var queue = [];            // taps not yet confirmed by the server
   var flushing = false, flushTimer = null, tab = 'count', deal = 'upgrade';
@@ -448,7 +448,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   });
 
   // ---------- count ----------
-  function labelOf(k) { return k === 'quiz' ? 'Quiz done' : k === 'l3' ? 'Sent to L3' : session.thirdLabel; }
+  function labelOf(k) { return k === 'quiz' ? 'People Engaged' : k === 'l3' ? 'Sent to L3' : session.thirdLabel; }
   function renderCount() {
     $('#myName').textContent = session.name || ''; $('#today').textContent = dayLabel();
     $('#tiles').innerHTML = COUNTERS.map(function (k) {
