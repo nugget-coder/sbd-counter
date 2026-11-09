@@ -208,6 +208,8 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
 .dgrp summary::-webkit-details-marker { display: none; }
 .dgrp summary b { display: block; font-size: 15px; font-weight: 700; }
 .dgrp summary small { display: block; font-size: 13px; color: var(--muted); margin-top: 1px; }
+.dgrp summary small.when { display: none; }
+.dgrp[open] summary small.when { display: block; }
 .dgrp summary svg { flex: none; transition: transform 0.15s ease; }
 .dgrp[open] summary svg { transform: rotate(180deg); }
 .dbody { padding: 0 0 12px; }
@@ -610,7 +612,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     var up = function (img, from, to, off, src) { return '<li class="uprow"><img src="' + img + '" alt=""><span>' + from + ' → ' + to + '</span><em>' + off + '</em>' + qr(src, from + ' → ' + to + ' · ' + off) + '</li>'; };
     var shot = function (src, alt) { return '<button class="zoomimg shot" type="button" aria-label="Enlarge: ' + alt + '"><img src="' + src + '" alt="' + alt + '"></button>'; };
     var chev = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
-    var group = function (title, inner) { return '<details class="dgrp"><summary><span><b>' + title + '</b></span>' + chev + '</summary><div class="dbody">' + inner + '</div></details>'; };
+    var group = function (title, inner, when) { return '<details class="dgrp"><summary><span><b>' + title + '</b>' + (when ? '<small class="when">' + when + '</small>' : '') + '</span>' + chev + '</summary><div class="dbody">' + inner + '</div></details>'; };
     var howto = function (steps, shots, cls) { return '<div class="dhow"><h4>How to collect</h4><ol class="howto">' + steps.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol><div class="shots ' + (cls || '') + '">' + shots.join('') + '</div></div>'; };
     $('#dealList').innerHTML =
       '<div class="dhead"><span class="dot">1</span>Store vouchers</div>' +
@@ -619,8 +621,8 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
           v('$40 off', '$200') + v('$80 off', '$450') + v('$160 off', '$1,000') + v('$300 off', '$2,000') + '</ul>' +
           howto(['Search Sonos on Lazada', 'Tap Visit Store on our Sonos Official Store', 'Collect the vouchers'],
             [shot('img/collect-1.jpg', 'Search Sonos, then tap Visit Store'), shot('img/collect-2.jpg', 'Collect the vouchers in the store')])) +
-        group('Flash vouchers', '<p class="dwhen">9 Nov · 12pm – 2pm and 6pm – 11:59pm</p><ul class="rows">' +
-          v('$100 off', '$500') + v('$200 off', '$1,000') + v('$400 off', '$2,000') + '</ul>') +
+        group('Flash vouchers', '<ul class="rows">' +
+          v('$100 off', '$500') + v('$200 off', '$1,000') + v('$400 off', '$2,000') + '</ul>', '9 Nov · 12pm – 2pm and 6pm – 11:59pm') +
         group('Pop-up exclusive', '<ul class="rows">' +
           vq('$350 off', '$2,000', 'img/qr-popup-350.svg') + vq('$400 off', '$3,000', 'img/qr-popup-400.svg') + '</ul>') +
         group('Sonos Upgrade Program', '<ul class="rows">' +
