@@ -187,6 +187,8 @@ main > * { flex: 0 0 auto; }
 .imgfull .pan { position: absolute; inset: 0; overflow: auto; -webkit-overflow-scrolling: touch; display: flex; align-items: center; }
 .imgfull .pan img { flex: none; width: 240%; max-width: none; height: auto; display: block; }
 .imgfull .qrclose { z-index: 2; }
+.imgfull.fit .pan { justify-content: center; padding: 16px 16px 96px; }
+.imgfull.fit .pan img { width: auto; max-width: 100%; max-height: 100%; margin: auto; object-fit: contain; }
 .qrfull { position: absolute; inset: 0; z-index: 20; background: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: calc(24px + var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px)) 24px 100px; }
 .qrfull img { width: min(88%, 520px); height: auto; aspect-ratio: 1 / 1; display: block; }
 .qrfull p { margin: 0; font-size: 18px; font-weight: 800; color: var(--ink); }
@@ -700,6 +702,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
       var src = b.querySelector('img');
       var centre = function () { pan.scrollLeft = (pan.scrollWidth - pan.clientWidth) / 2; };
       img.onload = centre; img.alt = src.alt; img.src = src.getAttribute('src');
+      full.classList.toggle('fit', b.classList.contains('shot'));
       full.hidden = false;
       if (img.complete) centre();
     })();
