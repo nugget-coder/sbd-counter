@@ -165,6 +165,21 @@ main > * { flex: 0 0 auto; }
 .qrlabel { align-self: flex-start; font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: var(--muted); }
 .qrcard img { width: 200px; height: 200px; display: block; }
 .qrhint { font-size: 13px; color: var(--muted); }
+.qbox { background: var(--white); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+/* Engagement: where the customer came from */
+.srcsheet { position: absolute; inset: 0; z-index: 25; background: rgba(26,26,26,0.45); display: flex; align-items: flex-end; }
+.srcpanel { width: 100%; background: var(--cream); border-radius: 24px 24px 0 0; padding: 18px 16px calc(20px + var(--tg-safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 14px; }
+.srchead { display: flex; align-items: center; justify-content: space-between; }
+.srchead b { font-size: 18px; font-weight: 800; }
+.srchead button { width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--white); color: var(--ink); display: flex; align-items: center; justify-content: center; }
+.srcgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.srcgrid button { min-height: 96px; border: 0; border-radius: 20px; background: var(--white); color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font: inherit; touch-action: manipulation; }
+.srcgrid button:active { background: var(--lilac-soft); }
+.srcgrid button:disabled { opacity: 0.35; }
+.srcgrid b { font-size: 18px; font-weight: 800; }
+.srcgrid span { font-size: 14px; color: var(--muted); }
+.srcsheet.remove .srcpanel { background: var(--lilac); }
 .gl { display: flex; flex-direction: column; gap: 10px; }
 .zoomimg { display: block; width: 100%; padding: 8px; border: 0; background: var(--white); border-radius: 18px; }
 .zoomimg img { width: 100%; display: block; border-radius: 10px; }
@@ -231,8 +246,11 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
         <img src="img/quiz-qr.svg" alt="QR code for the Sonos quiz">
         <span class="qrhint">Tap to enlarge</span>
       </button>
-      <button class="primary" id="openQuiz">Open Quiz Backend</button>
-      <p class="qpin" id="quizPin" hidden></p>
+      <div class="qbox">
+        <span class="qrlabel">FOR PROMOTERS</span>
+        <button class="primary" id="openQuiz">Open Quiz Backend</button>
+        <p class="qpin" id="quizPin" hidden></p>
+      </div>
       <div class="steps2">
         <div class="sec" style="margin:0">THE SIX STEPS</div>
         <div class="step"><span class="dot">1</span><span><b>Engage the crowd</b></span></div>
@@ -276,6 +294,12 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     <div class="pan" id="imgPan"><img id="imgFullImg" alt=""></div>
     <button class="qrclose" id="imgClose" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
+  <div class="srcsheet" id="srcSheet" role="dialog" aria-labelledby="srcTitle" hidden>
+    <div class="srcpanel">
+      <div class="srchead"><b id="srcTitle">Came from</b><button id="srcClose" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="srcgrid" id="srcGrid"></div>
+    </div>
+  </div>
   <div class="qrfull" id="qrFull" role="dialog" aria-label="Customer quiz QR code" hidden>
     <img src="img/quiz-qr.svg" alt="QR code for the Sonos quiz">
     <p>Scan to take the quiz</p>
@@ -306,8 +330,9 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     } catch (e) { /* older Telegram versions: ignore */ }
   }
 
-  var COUNTERS = ['quiz', 'third'];   // People Engaged (quiz column) and Carted Out
-  var session = { name: null, date: null, thirdLabel: 'Leads', counts: { quiz: 0, l3: 0, third: 0 } };
+  var COUNTERS = ['quiz', 'third'];   // Engagement (quiz column) and Carted Out
+  var SOURCES = [['passerby', 'Passerby'], ['flyers', 'Flyers'], ['groupbuy', 'Groupbuy'], ['ads', 'Ads']];
+  var session = { name: null, date: null, thirdLabel: 'Leads', counts: { quiz: 0, l3: 0, third: 0 }, sources: { passerby: 0, flyers: 0, groupbuy: 0, ads: 0 } };
   var queue = [];            // taps not yet confirmed by the server
   var flushing = false, flushTimer = null, tab = 'count', deal = 'upgrade';
   var watched = [], pendingWatched = [];   // video parts marked "Done watching"; pending = not yet saved
@@ -319,7 +344,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     get: function () { try { return JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) { return null; } },
     set: function (v) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(v)); } catch (e) { /* storage blocked */ } }
   };
-  function persist() { store.set({ name: session.name, date: session.date, thirdLabel: session.thirdLabel, counts: session.counts, queue: queue, watched: watched, pendingWatched: pendingWatched }); }
+  function persist() { store.set({ name: session.name, date: session.date, thirdLabel: session.thirdLabel, counts: session.counts, sources: session.sources, queue: queue, watched: watched, pendingWatched: pendingWatched }); }
   function sgDate() {
     var p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
     var g = function (t) { return p.filter(function (x) { return x.type === t; })[0].value; };
@@ -366,11 +391,13 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
 
   // ---------- state ----------
   function pendingDelta(k) { return queue.reduce(function (a, t) { return t.counter === k ? a + t.delta : a; }, 0); }
+  function pendingSrc(s) { return queue.reduce(function (a, t) { return t.source === s ? a + t.delta : a; }, 0); }
   function applyServer(r) {
     session.date = r.date; session.thirdLabel = r.thirdLabel;
     if (r.profile) session.name = r.profile.name;
     var pin = $('#quizPin'); pin.textContent = r.quizPin ? 'PIN: ' + r.quizPin : ''; pin.hidden = !r.quizPin;
     COUNTERS.forEach(function (k) { session.counts[k] = Math.max(0, r.counts[k] + pendingDelta(k)); });
+    SOURCES.forEach(function (x) { session.sources[x[0]] = Math.max(0, ((r.sources && r.sources[x[0]]) || 0) + pendingSrc(x[0])); });
     if (r.watched) r.watched.concat(pendingWatched).forEach(function (n) { n = String(n); if (watched.indexOf(n) < 0) watched.push(n); });
     persist();
   }
@@ -381,7 +408,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     if (cached) { watched = cached.watched || []; pendingWatched = cached.pendingWatched || []; }
     if (cached && cached.name && cached.date === sgDate()) {
       session.name = cached.name; session.date = cached.date; session.thirdLabel = cached.thirdLabel || 'Leads';
-      session.counts = cached.counts || session.counts; queue = cached.queue || [];
+      session.counts = cached.counts || session.counts; session.sources = cached.sources || session.sources; queue = cached.queue || [];
       tab = 'count'; show('count'); flushSoon();
       refresh(true);                       // verify in the background
     } else {
@@ -448,7 +475,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   });
 
   // ---------- count ----------
-  function labelOf(k) { return k === 'quiz' ? 'People Engaged' : k === 'l3' ? 'Sent to L3' : session.thirdLabel; }
+  function labelOf(k) { return k === 'quiz' ? 'Engagement' : k === 'l3' ? 'Sent to L3' : session.thirdLabel; }
   function renderCount() {
     $('#myName').textContent = session.name || ''; $('#today').textContent = dayLabel();
     $('#tiles').innerHTML = COUNTERS.map(function (k) {
@@ -461,10 +488,11 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
         '<span class="plus" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></div>';
     }).join('');
   }
-  function bump(k, d) {
-    if (session.counts[k] + d < 0) return;
+  function bump(k, d, src) {
+    if (session.counts[k] + d < 0 || (src && session.sources[src] + d < 0)) return;
     session.counts[k] += d;
-    queue.push({ counter: k, delta: d, clientId: uid() });
+    if (src) session.sources[src] += d;
+    queue.push(src ? { counter: k, delta: d, source: src, clientId: uid() } : { counter: k, delta: d, clientId: uid() });
     persist();
     var n = $('#n-' + k); n.textContent = session.counts[k];
     n.classList.remove('pop'); void n.offsetWidth; if (d > 0) n.classList.add('pop');
@@ -472,9 +500,30 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     haptic(); flushSoon();
   }
   $('#tiles').addEventListener('click', function (e) {
-    var a = e.target.closest('[data-add]'); if (a) return bump(a.dataset.add, 1);
-    var u = e.target.closest('[data-undo]'); if (u) return bump(u.dataset.undo, -1);
+    var a = e.target.closest('[data-add]'); if (a) return a.dataset.add === 'quiz' ? openSources(1) : bump(a.dataset.add, 1);
+    var u = e.target.closest('[data-undo]'); if (u) return u.dataset.undo === 'quiz' ? openSources(-1) : bump(u.dataset.undo, -1);
   });
+
+  // Engagement asks where the customer came from. "−" asks which one to take back.
+  var srcMode = 1;
+  function openSources(d) {
+    var tagged = SOURCES.reduce(function (a, x) { return a + session.sources[x[0]]; }, 0);
+    if (d < 0 && tagged === 0) return bump('quiz', -1);          // taps from before sources existed
+    srcMode = d;
+    $('#srcTitle').textContent = d > 0 ? 'Came from' : 'Remove one';
+    $('#srcSheet').classList.toggle('remove', d < 0);
+    $('#srcGrid').innerHTML = SOURCES.map(function (x) {
+      return '<button data-src="' + x[0] + '"' + (d < 0 && !session.sources[x[0]] ? ' disabled' : '') + '><b>' + x[1] + '</b><span>' + session.sources[x[0]] + ' today</span></button>';
+    }).join('');
+    $('#srcSheet').hidden = false;
+  }
+  function closeSources() { $('#srcSheet').hidden = true; }
+  $('#srcGrid').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-src]'); if (!b) return;
+    closeSources(); bump('quiz', srcMode, b.dataset.src);
+  });
+  $('#srcClose').addEventListener('click', closeSources);
+  $('#srcSheet').addEventListener('click', function (e) { if (e.target.id === 'srcSheet') closeSources(); });
 
   // Taps are sent in small batches. Anything unsent is kept on the phone and retried.
   function flushSoon(ms) { clearTimeout(flushTimer); flushTimer = setTimeout(flush, ms || 1200); }
