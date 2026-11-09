@@ -622,14 +622,14 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     var shot = function (src, alt) { return '<button class="zoomimg shot" type="button" aria-label="Enlarge: ' + alt + '"><img src="' + src + '" alt="' + alt + '"></button>'; };
     var chev = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
     var group = function (title, inner, when) { return '<details class="dgrp"><summary><span><b>' + title + '</b>' + (when ? '<small class="when">' + when + '</small>' : '') + '</span>' + chev + '</summary><div class="dbody">' + inner + '</div></details>'; };
-    var howto = function (steps, shots, cls) { return '<details class="dhow"><summary><b>How to collect</b>' + chev + '</summary><div class="dhowbody"><ol class="howto">' + steps.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol><div class="shots ' + (cls || '') + '">' + shots.join('') + '</div></div></details>'; };
+    var howto = function (steps, shots, cls, open) { return '<details class="dhow"' + (open ? ' open' : '') + '><summary><b>How to collect</b>' + chev + '</summary><div class="dhowbody"><ol class="howto">' + steps.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol><div class="shots ' + (cls || '') + '">' + shots.join('') + '</div></div></details>'; };
     $('#dealList').innerHTML =
       '<div class="dhead"><span class="dot">1</span>Store vouchers</div>' +
       '<div class="dcard">' +
         group('Sonos vouchers', '<ul class="rows">' +
           v('$40 off', '$200') + v('$80 off', '$450') + v('$160 off', '$1,000') + v('$300 off', '$2,000') + '</ul>' +
           howto(['Search Sonos on Lazada', 'Tap Visit Store on our Sonos Official Store', 'Collect the vouchers'],
-            [shot('img/collect-1.jpg', 'Search Sonos, then tap Visit Store'), shot('img/collect-2.jpg', 'Collect the vouchers in the store')])) +
+            [shot('img/collect-1.jpg', 'Search Sonos, then tap Visit Store'), shot('img/collect-2.jpg', 'Collect the vouchers in the store')], '', true)) +
         group('Flash vouchers', '<ul class="rows">' +
           v('$100 off', '$500') + v('$200 off', '$1,000') + v('$400 off', '$2,000') + '</ul>', '9 Nov · 12pm – 2pm and 6pm – 11:59pm') +
         group('Pop-up exclusive', '<ul class="rows">' +
