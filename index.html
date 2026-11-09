@@ -178,7 +178,7 @@ main > * { flex: 0 0 auto; }
 .srcsheet .srchead b { font-size: 17px; }
 .srcsheet .srchead button { width: 34px; height: 34px; }
 .srcbody { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; gap: 8px; padding-bottom: 8px;
-  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent); }
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent); }
 .srclabel { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: var(--ink); opacity: 0.7; margin: 4px 2px 0; }
 .srccommon { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .srccommon button { min-height: 64px; border: 0; border-radius: 16px; background: var(--white); color: var(--ink); font: inherit; font-size: 16px; font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; touch-action: manipulation; }
@@ -401,11 +401,10 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   }
 
   var COUNTERS = ['quiz', 'third'];   // Engagement (quiz column) and Carted Out
-  var SOURCES = [['passerby', 'Passerby'], ['flyers', 'Flyers'], ['groupbuy', 'Groupbuy'], ['ads', 'Ads'],
-    ['social', 'Instagram or Facebook'], ['visited', 'Visited the Wheelock Place pop-up or Sonos store'], ['telegram', 'Telegram channel'],
-    ['friend', 'Friend or family'], ['livestream', 'Livestream'], ['youtube', 'YouTube'], ['lzpush', 'Lazada email or push notification'],
-    ['lzapp', 'Lazada app (banner, search, product listing or voucher)'], ['tiktok', 'TikTok'], ['poster', 'Poster or screen at Wheelock Place'],
-    ['residence', 'Flyer at my residence']];
+  var SOURCES = [['passerby', 'Passerby'], ['flyers', 'Flyer'], ['groupbuy', 'Groupbuy'], ['ads', 'Online ad'],
+    ['social', 'Instagram / Facebook'], ['visited', 'Sonos store'], ['telegram', 'Telegram'], ['friend', 'Friend / family'],
+    ['livestream', 'Livestream'], ['youtube', 'YouTube'], ['lzpush', 'Lazada email / push'], ['lzapp', 'Lazada app'],
+    ['tiktok', 'TikTok'], ['poster', 'Wheelock poster / screen'], ['residence', 'Flyer at home']];
   var session = { name: null, date: null, thirdLabel: 'Leads', counts: { quiz: 0, l3: 0, third: 0 }, sources: {} };
   var queue = [];            // taps not yet confirmed by the server
   var flushing = false, flushTimer = null, tab = 'count', deal = 'upgrade';
@@ -589,7 +588,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     srcMode = d;
     $('#srcTitle').textContent = d > 0 ? 'Came from' : 'Remove one';
     $('#srcSheet').classList.toggle('remove', d < 0);
-    var cnt = function (k) { return haveSrc(k) ? haveSrc(k) + ' today' : ''; };
+    var cnt = function (k) { return d < 0 && haveSrc(k) ? haveSrc(k) + ' today' : ''; };   // counts only when removing
     var html = '';
     var rows = d > 0 ? SOURCES : SOURCES.filter(function (x) { return haveSrc(x[0]) > 0; });   // one plain list
     html += '<ul class="srcrows">' + rows.map(function (x) {
