@@ -203,6 +203,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
 /* Deals: store and platform vouchers. One card per section; groups fold open; one bold thing per line at most. */
 .dhead { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 800; margin-top: 4px; }
 .dcard { background: var(--white); border-radius: 20px; padding: 0 16px; }
+.dcard + .dhead { margin-top: 18px; }   /* more air before section 2 */
 .dgrp + .dgrp, .dgrp + .dhow { border-top: 1px solid var(--line); }
 .dgrp summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 10px 0; cursor: pointer; }
 .dgrp summary::-webkit-details-marker { display: none; }
