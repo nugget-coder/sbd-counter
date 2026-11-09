@@ -235,6 +235,10 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
 .shots.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .zoomimg.shot { padding: 0; background: none; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
 .zoomimg.shot img { border-radius: 0; }
+
+#nav button.navdeal, nav button.navdeal { color: #D93A2B; font-weight: 700; }
+#nav button.navdeal[aria-current="page"], nav button.navdeal[aria-current="page"] { color: #D93A2B; font-weight: 800; }
+#nav button.navdeal svg { fill-opacity: 0.18; }
 </style>
 </head>
 <body>
@@ -346,8 +350,8 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
 
   <nav id="nav" hidden>
     <button data-go="count"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Count</button>
+    <button data-go="deals" class="navdeal"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8zM7.5 7.5h.01"/></svg>Deals</button>
     <button data-go="quiz"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.3a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.6-2.8 2.6M12 17h.01"/></svg>Quiz</button>
-    <button data-go="deals"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8zM7.5 7.5h.01"/></svg>Deals</button>
     <button data-go="guide"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></svg>Guide</button>
   </nav>
 </div>
