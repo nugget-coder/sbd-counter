@@ -198,26 +198,23 @@ nav { display: flex; background: var(--white); padding: 6px 6px calc(10px + env(
 nav button { flex: 1; min-height: 54px; border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; font-weight: 500; color: var(--muted); }
 nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
 
-/* Deals: store and platform vouchers. One card per section; dividers, not boxes, inside it. */
-.dhead { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 800; letter-spacing: 0.08em; margin-top: 4px; }
+/* Deals: store and platform vouchers. One card; one bold thing per line at most. */
+.dhead { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 800; margin-top: 4px; }
 .dcard { background: var(--white); border-radius: 20px; padding: 2px 16px; }
-.dcard section { padding: 14px 0; display: flex; flex-direction: column; gap: 8px; }
+.dcard section { padding: 14px 0; display: flex; flex-direction: column; gap: 6px; }
 .dcard section + section { border-top: 1px solid var(--line); }
-.dcard h4 { margin: 0; font-size: 16px; font-weight: 800; }
-.dcard h4 small { font-size: 13px; font-weight: 500; color: var(--muted); }
-.dsub { margin: -4px 0 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
-.vrow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; }
-.vrow.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.vrow .v b { display: block; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
-.vrow.three .v b { font-size: 18px; }
-.vrow .v span { display: block; font-size: 12px; color: var(--muted); }
-.up { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 14px; }
-.up b { font-size: 18px; font-weight: 800; white-space: nowrap; }
-.howto { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.5; }
-.shots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dcard h4 { margin: 0; font-size: 15px; font-weight: 700; }
+.dsub { margin: -4px 0 2px; font-size: 13px; line-height: 1.4; color: var(--muted); }
+.rows { list-style: none; margin: 0; padding: 0; }
+.rows li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 5px 0; font-size: 14px; color: var(--muted); }
+.rows li + li { border-top: 1px dashed var(--line); }
+.rows em { font-style: normal; font-size: 16px; font-weight: 600; color: var(--ink); }
+.rows li > span:first-child { color: var(--ink); }
+.howto { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.55; }
+.shots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
 .zoomimg.shot { padding: 0; background: none; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
 .zoomimg.shot img { border-radius: 0; }
-.dplain { margin: 0; font-size: 14px; line-height: 1.45; }
+.dplain { margin: 0; font-size: 14px; line-height: 1.45; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -588,24 +585,25 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   ];
   function v(o, m, c) { return '<div class="voucher ' + (c || '') + '"><div class="off">' + o + '</div><div class="min">min. spend ' + m + '</div></div>'; }
   function renderDeals() {
-    var v = function (off, min) { return '<div class="v"><b>' + off + '</b><span>min. ' + min + '</span></div>'; };
-    var up = function (from, off, to) { return '<div class="up"><span>' + from + ' → ' + to + '</span><b>' + off + '</b></div>'; };
+    var row = function (left, right) { return '<li><span>' + left + '</span><span>' + right + '</span></li>'; };
+    var v = function (off, min) { return row('<em>' + off + '</em>', 'min. spend ' + min); };
+    var up = function (from, to, off) { return row(from + ' → ' + to, '<em>' + off + '</em>'); };
     var shot = function (src, alt) { return '<button class="zoomimg shot" type="button" aria-label="Enlarge: ' + alt + '"><img src="' + src + '" alt="' + alt + '"></button>'; };
     $('#dealList').innerHTML =
-      '<div class="dhead"><span class="dot">1</span>STORE VOUCHERS</div>' +
+      '<div class="dhead"><span class="dot">1</span>Store vouchers</div>' +
       '<div class="dcard">' +
-        '<section><h4>Sonos vouchers <small>on the Lazada app</small></h4><div class="vrow">' +
-          v('$40 off', '$200') + v('$80 off', '$450') + v('$160 off', '$1,000') + v('$300 off', '$2,000') + '</div></section>' +
-        '<section><h4>Flash vouchers</h4><p class="dsub">9 Nov · 12pm – 2pm and 6pm – 11:59pm</p><div class="vrow three">' +
-          v('$100 off', '$500') + v('$200 off', '$1,000') + v('$400 off', '$2,000') + '</div></section>' +
-        '<section><h4>How to collect</h4><ol class="howto"><li>Search <b>Sonos</b> on Lazada</li><li>Tap <b>Visit Store</b> on our Sonos Official Store</li><li>Collect the vouchers</li></ol>' +
+        '<section><h4>Sonos vouchers</h4><p class="dsub">On the Lazada app</p><ul class="rows">' +
+          v('$40 off', '$200') + v('$80 off', '$450') + v('$160 off', '$1,000') + v('$300 off', '$2,000') + '</ul></section>' +
+        '<section><h4>Flash vouchers</h4><p class="dsub">9 Nov only · 12pm – 2pm, 6pm – 11:59pm</p><ul class="rows">' +
+          v('$100 off', '$500') + v('$200 off', '$1,000') + v('$400 off', '$2,000') + '</ul></section>' +
+        '<section><h4>How to collect</h4><ol class="howto"><li>Search Sonos on Lazada</li><li>Tap Visit Store on our Sonos Official Store</li><li>Collect the vouchers</li></ol>' +
           '<div class="shots">' + shot('img/collect-1.jpg', 'Search Sonos, then tap Visit Store') + shot('img/collect-2.jpg', 'Collect the vouchers in the store') + '</div></section>' +
-        '<section><h4>Pop-up exclusive</h4><p class="dsub">Only at our pop-up: scan the QR code</p><div class="vrow">' +
-          v('$350 off', '$2,000') + v('$400 off', '$3,000') + '</div></section>' +
-        '<section><h4>Sonos Upgrade Program</h4>' +
-          up('Sonos Ace', '$100 off', 'Ace Ultra') + up('Beam (Gen 1 / 2)', '$200 off', 'Beam Ultra') + up('Beam (Gen 1 / 2)', '$350 off', 'Beam Ultra bundle') + '</section>' +
+        '<section><h4>Pop-up exclusive</h4><p class="dsub">Only at our pop-up: scan the QR code</p><ul class="rows">' +
+          v('$350 off', '$2,000') + v('$400 off', '$3,000') + '</ul></section>' +
+        '<section><h4>Sonos Upgrade Program</h4><ul class="rows">' +
+          up('Sonos Ace', 'Ace Ultra', '$100 off') + up('Beam (Gen 1 / 2)', 'Beam Ultra', '$200 off') + up('Beam (Gen 1 / 2)', 'Beam Ultra bundle', '$350 off') + '</ul></section>' +
       '</div>' +
-      '<div class="dhead"><span class="dot">2</span>PLATFORM VOUCHERS</div>' +
+      '<div class="dhead"><span class="dot">2</span>Platform vouchers</div>' +
       '<p class="dplain">Collect them on the Lazada app Voucher Page. Mechanics vary from user to user.</p>';
   }
 
