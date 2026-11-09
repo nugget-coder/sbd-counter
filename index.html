@@ -221,6 +221,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
 .dhow summary b { font-size: 15px; font-weight: 700; }
 .dhow summary svg { flex: none; transition: transform 0.15s ease; }
 .dhow[open] summary svg { transform: rotate(180deg); }
+.dhow.plain h4 { margin: 0; padding: 12px 0 6px; font-size: 15px; font-weight: 700; }
 .dhowbody { display: flex; flex-direction: column; gap: 6px; padding: 0 0 14px; }
 .rows { list-style: none; margin: 0; padding: 0; }
 .rows li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 6px 0; font-size: 14px; color: var(--muted); }
@@ -622,7 +623,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     var shot = function (src, alt) { return '<button class="zoomimg shot" type="button" aria-label="Enlarge: ' + alt + '"><img src="' + src + '" alt="' + alt + '"></button>'; };
     var chev = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
     var group = function (title, inner, when) { return '<details class="dgrp"><summary><span><b>' + title + '</b>' + (when ? '<small class="when">' + when + '</small>' : '') + '</span>' + chev + '</summary><div class="dbody">' + inner + '</div></details>'; };
-    var howto = function (steps, shots, cls, open) { return '<details class="dhow"' + (open ? ' open' : '') + '><summary><b>How to collect</b>' + chev + '</summary><div class="dhowbody"><ol class="howto">' + steps.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol><div class="shots ' + (cls || '') + '">' + shots.join('') + '</div></div></details>'; };
+    var howto = function (steps, shots, cls, plain) { return (plain ? '<div class="dhow plain"><h4>How to collect</h4>' : '<details class="dhow"><summary><b>How to collect</b>' + chev + '</summary>') + '<div class="dhowbody"><ol class="howto">' + steps.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol><div class="shots ' + (cls || '') + '">' + shots.join('') + '</div></div>' + (plain ? '</div>' : '</details>'); };
     $('#dealList').innerHTML =
       '<div class="dhead"><span class="dot">1</span>Store vouchers</div>' +
       '<div class="dcard">' +
@@ -642,6 +643,8 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
         howto(['Tap Collect 11.11 Vouchers Now! on the Lazada home page', 'Tap More vouchers', 'Collect all the vouchers on the Voucher page'],
           [shot('img/platform-1.jpg', 'Tap Collect 11.11 Vouchers Now'), shot('img/platform-2.jpg', 'Tap More vouchers'), shot('img/platform-3.jpg', 'Collect all the vouchers')], 'three') +
       '</div>';
+    var cats = Array.prototype.slice.call(document.querySelectorAll('#dealList > .dcard > details'));
+    cats.forEach(function (d) { d.addEventListener('toggle', function () { if (d.open) cats.forEach(function (o) { if (o !== d) o.open = false; }); }); });
   }
 
   // ---------- guide videos (Loom) ----------
