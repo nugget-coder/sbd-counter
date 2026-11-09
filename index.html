@@ -191,7 +191,7 @@ main > * { flex: 0 0 auto; }
 .imgfull.fit .pan img { width: auto; max-width: 100%; max-height: 100%; margin: auto; object-fit: contain; }
 .qrfull { position: absolute; inset: 0; z-index: 20; background: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: calc(24px + var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px)) 24px 100px; }
 .qrfull img { width: min(88%, 520px); height: auto; aspect-ratio: 1 / 1; display: block; }
-.qrfull p { margin: 0; font-size: 18px; font-weight: 800; color: var(--ink); }
+.qrfull p { margin: 0; font-size: 18px; font-weight: 800; color: var(--ink); text-align: center; }
 .qrclose { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(28px + env(safe-area-inset-bottom, 0px)); width: 56px; height: 56px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--white); display: flex; align-items: center; justify-content: center; }
 .quizcard { background: var(--white); border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 8px; }
 .quizcard b { font-size: 18px; font-weight: 800; }
@@ -220,8 +220,13 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
 .rows li + li { border-top: 1px dashed var(--line); }
 .rows em { font-style: normal; font-size: 16px; font-weight: 600; color: var(--ink); white-space: nowrap; }
 .rows li > span:first-child { color: var(--ink); }
-.rows li.uprow { align-items: center; }
-.uprow img { flex: none; width: 64px; height: 48px; object-fit: contain; }
+.rows li.uprow, .rows li.qrrow { align-items: center; }
+.rows li.qrrow > span { flex: 1; text-align: right; }
+.qrthumb { flex: none; width: 48px; height: 48px; padding: 3px; border: 1px solid var(--ink); border-radius: 10px; background: var(--white); }
+.qrthumb img { width: 100%; height: 100%; display: block; }
+.uprow > img { flex: none; width: 52px; height: 40px; object-fit: contain; }
+.rows li.uprow { gap: 10px; }
+.uprow > span { font-size: 13px; line-height: 1.3; }
 .uprow span { flex: 1; min-width: 0; color: var(--ink); }
 .howto { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.55; }
 .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
@@ -599,8 +604,10 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
   function v(o, m, c) { return '<div class="voucher ' + (c || '') + '"><div class="off">' + o + '</div><div class="min">min. spend ' + m + '</div></div>'; }
   function renderDeals() {
     var row = function (left, right) { return '<li><span>' + left + '</span><span>' + right + '</span></li>'; };
+    var qr = function (src, cap) { return '<button class="qrthumb" type="button" data-qr="' + src + '" data-cap="' + cap + '" aria-label="Show QR code: ' + cap + '"><img src="' + src + '" alt=""></button>'; };
     var v = function (off, min) { return row('<em>' + off + '</em>', 'min. spend ' + min); };
-    var up = function (img, from, to, off) { return '<li class="uprow"><img src="' + img + '" alt=""><span>' + from + ' → ' + to + '</span><em>' + off + '</em></li>'; };
+    var vq = function (off, min, src) { return '<li class="qrrow"><em>' + off + '</em><span>min. spend ' + min + '</span>' + qr(src, off + ' · min. spend ' + min) + '</li>'; };
+    var up = function (img, from, to, off, src) { return '<li class="uprow"><img src="' + img + '" alt=""><span>' + from + ' → ' + to + '</span><em>' + off + '</em>' + qr(src, from + ' → ' + to + ' · ' + off) + '</li>'; };
     var shot = function (src, alt) { return '<button class="zoomimg shot" type="button" aria-label="Enlarge: ' + alt + '"><img src="' + src + '" alt="' + alt + '"></button>'; };
     var chev = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
     var group = function (title, inner) { return '<details class="dgrp"><summary><span><b>' + title + '</b></span>' + chev + '</summary><div class="dbody">' + inner + '</div></details>'; };
@@ -615,9 +622,9 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
         group('Flash vouchers', '<p class="dwhen">9 Nov · 12pm – 2pm and 6pm – 11:59pm</p><ul class="rows">' +
           v('$100 off', '$500') + v('$200 off', '$1,000') + v('$400 off', '$2,000') + '</ul>') +
         group('Pop-up exclusive', '<ul class="rows">' +
-          v('$350 off', '$2,000') + v('$400 off', '$3,000') + '</ul>') +
+          vq('$350 off', '$2,000', 'img/qr-popup-350.svg') + vq('$400 off', '$3,000', 'img/qr-popup-400.svg') + '</ul>') +
         group('Sonos Upgrade Program', '<ul class="rows">' +
-          up('img/u1.jpg', 'Sonos Ace', 'Ace Ultra', '$100 off') + up('img/u2.jpg', 'Beam (Gen 1 / 2)', 'Beam Ultra', '$200 off') + up('img/u3.jpg', 'Beam (Gen 1 / 2)', 'Beam Ultra bundle', '$350 off') + '</ul>') +
+          up('img/u1.jpg', 'Sonos Ace', 'Ace Ultra', '$100 off', 'img/qr-upgrade-ace.svg') + up('img/u2.jpg', 'Beam (Gen 1 / 2)', 'Beam Ultra', '$200 off', 'img/qr-upgrade-beam.svg') + up('img/u3.jpg', 'Beam (Gen 1 / 2)', 'Beam Ultra bundle', '$350 off', 'img/qr-upgrade-bundle.svg') + '</ul>') +
       '</div>' +
       '<div class="dhead"><span class="dot">2</span>Platform vouchers</div>' +
       '<div class="dcard">' +
@@ -718,7 +725,16 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
       if (!on && tg.isFullscreen) tg.exitFullscreen();
     } catch (e) { /* older Telegram: stay as is */ }
   }
-  document.getElementById('qrOpen').addEventListener('click', function () { document.getElementById('qrFull').hidden = false; tgFullscreen(true); });
+  function showQr(src, cap) {
+    var f = document.getElementById('qrFull');
+    f.querySelector('img').src = src; f.querySelector('p').textContent = cap;
+    f.hidden = false; tgFullscreen(true);
+  }
+  document.getElementById('qrOpen').addEventListener('click', function () { showQr('img/quiz-qr.svg', 'Scan to take the quiz'); });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-qr]'); if (!b) return;
+    showQr(b.dataset.qr, 'Scan to collect · ' + b.dataset.cap);
+  });
   document.getElementById('qrClose').addEventListener('click', function () { document.getElementById('qrFull').hidden = true; tgFullscreen(false); });
 
   // ---------- wiring ----------
