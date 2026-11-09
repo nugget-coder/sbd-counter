@@ -591,12 +591,7 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     $('#srcSheet').classList.toggle('remove', d < 0);
     var cnt = function (k) { return haveSrc(k) ? haveSrc(k) + ' today' : ''; };
     var html = '';
-    if (d > 0) {
-      html += '<div class="srclabel">MOST COMMON</div><div class="srccommon">' + COMMON.map(function (k) {
-        return '<button type="button" data-src="' + k + '">' + labelSrc(k) + (cnt(k) ? '<small>' + cnt(k) + '</small>' : '') + '</button>';
-      }).join('') + '</div><div class="srclabel">OTHER</div>';
-    }
-    var rows = SOURCES.filter(function (x) { return d > 0 ? COMMON.indexOf(x[0]) < 0 : haveSrc(x[0]) > 0; });
+    var rows = d > 0 ? SOURCES : SOURCES.filter(function (x) { return haveSrc(x[0]) > 0; });   // one plain list
     html += '<ul class="srcrows">' + rows.map(function (x) {
       return '<li data-src="' + x[0] + '"><span>' + x[1] + '</span>' + (cnt(x[0]) ? '<small>' + cnt(x[0]) + '</small>' : '') + '</li>';
     }).join('') + '</ul>';
