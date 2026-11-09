@@ -202,13 +202,15 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
 .dhead { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 800; margin-top: 4px; }
 .dcard { background: var(--white); border-radius: 20px; padding: 0 16px; }
 .dgrp + .dgrp, .dgrp + .dhow { border-top: 1px solid var(--line); }
-.dgrp summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; padding: 10px 0; cursor: pointer; }
+.dgrp summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 10px 0; cursor: pointer; }
 .dgrp summary::-webkit-details-marker { display: none; }
 .dgrp summary b { display: block; font-size: 15px; font-weight: 700; }
 .dgrp summary small { display: block; font-size: 13px; color: var(--muted); margin-top: 1px; }
 .dgrp summary svg { flex: none; transition: transform 0.15s ease; }
 .dgrp[open] summary svg { transform: rotate(180deg); }
 .dbody { padding: 0 0 12px; }
+.dwhen { margin: 0 0 4px; font-size: 13px; color: var(--muted); }
+.dbody .dhow { border-top: 1px solid var(--line); margin-top: 8px; padding: 12px 0 4px; }
 .dhow { padding: 14px 0 16px; display: flex; flex-direction: column; gap: 6px; }
 .dhow h4 { margin: 0; font-size: 15px; font-weight: 700; }
 .rows { list-style: none; margin: 0; padding: 0; }
@@ -599,21 +601,21 @@ nav button[aria-current="page"] { color: var(--ink); font-weight: 800; }
     var up = function (img, from, to, off) { return '<li class="uprow"><img src="' + img + '" alt=""><span>' + from + ' → ' + to + '</span><em>' + off + '</em></li>'; };
     var shot = function (src, alt) { return '<button class="zoomimg shot" type="button" aria-label="Enlarge: ' + alt + '"><img src="' + src + '" alt="' + alt + '"></button>'; };
     var chev = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
-    var group = function (title, hint, inner) { return '<details class="dgrp"><summary><span><b>' + title + '</b><small>' + hint + '</small></span>' + chev + '</summary><div class="dbody">' + inner + '</div></details>'; };
+    var group = function (title, inner) { return '<details class="dgrp"><summary><span><b>' + title + '</b></span>' + chev + '</summary><div class="dbody">' + inner + '</div></details>'; };
     var howto = function (steps, shots, cls) { return '<div class="dhow"><h4>How to collect</h4><ol class="howto">' + steps.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol><div class="shots ' + (cls || '') + '">' + shots.join('') + '</div></div>'; };
     $('#dealList').innerHTML =
       '<div class="dhead"><span class="dot">1</span>Store vouchers</div>' +
       '<div class="dcard">' +
-        group('Sonos vouchers', 'On the Lazada app · up to $300 off', '<ul class="rows">' +
-          v('$40 off', '$200') + v('$80 off', '$450') + v('$160 off', '$1,000') + v('$300 off', '$2,000') + '</ul>') +
-        group('Flash vouchers', '9 Nov only · 12pm – 2pm, 6pm – 11:59pm', '<ul class="rows">' +
+        group('Sonos vouchers', '<ul class="rows">' +
+          v('$40 off', '$200') + v('$80 off', '$450') + v('$160 off', '$1,000') + v('$300 off', '$2,000') + '</ul>' +
+          howto(['Search Sonos on Lazada', 'Tap Visit Store on our Sonos Official Store', 'Collect the vouchers'],
+            [shot('img/collect-1.jpg', 'Search Sonos, then tap Visit Store'), shot('img/collect-2.jpg', 'Collect the vouchers in the store')])) +
+        group('Flash vouchers', '<p class="dwhen">9 Nov · 12pm – 2pm and 6pm – 11:59pm</p><ul class="rows">' +
           v('$100 off', '$500') + v('$200 off', '$1,000') + v('$400 off', '$2,000') + '</ul>') +
-        group('Pop-up exclusive', 'Scan the QR code at our pop-up', '<ul class="rows">' +
+        group('Pop-up exclusive', '<ul class="rows">' +
           v('$350 off', '$2,000') + v('$400 off', '$3,000') + '</ul>') +
-        group('Sonos Upgrade Program', 'Trade up from Ace or Beam · up to $350 off', '<ul class="rows">' +
+        group('Sonos Upgrade Program', '<ul class="rows">' +
           up('img/u1.jpg', 'Sonos Ace', 'Ace Ultra', '$100 off') + up('img/u2.jpg', 'Beam (Gen 1 / 2)', 'Beam Ultra', '$200 off') + up('img/u3.jpg', 'Beam (Gen 1 / 2)', 'Beam Ultra bundle', '$350 off') + '</ul>') +
-        howto(['Search Sonos on Lazada', 'Tap Visit Store on our Sonos Official Store', 'Collect the vouchers'],
-          [shot('img/collect-1.jpg', 'Search Sonos, then tap Visit Store'), shot('img/collect-2.jpg', 'Collect the vouchers in the store')]) +
       '</div>' +
       '<div class="dhead"><span class="dot">2</span>Platform vouchers</div>' +
       '<div class="dcard">' +
